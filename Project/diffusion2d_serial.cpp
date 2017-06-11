@@ -44,27 +44,33 @@ public:
         /// For each row, apply Thomas algorithm for implicit solution
         for(size_type i = 1; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = rho_[i*N_ + 1] + c_[1]*rho_[i*N_ + 2];
+            d_[1] = -c_[1]*rho_[(i-1)*N_ + 1] + (1-2*fac_)/(1+2*fac_) *
+                    rho_[i*N_ + 1] - c_[1]*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-1; k++) {
-                d_[k] = ( c_[1]*rho_[i*N_ + k - 1] + rho_[i*N_ + k] +
-                          c_[1]*rho_[i*N_ + k + 1] - c_[1]*d_[k-1] )
-                          / (1.0 - c_[1]*c_[k-1]);
+                d_[k] = ( fac_*rho_[(i-1)*N_ + k] +
+                          (1-2*fac_)*rho_[i*N_ + k] +
+                          fac_*rho_[(i+1)*N_ + k] +
+                          fac_*d_[k-1] ) /
+                         ( 1 + 2*fac_ + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the half time step
-            rho_[i*N_ + N_ - 2] = d_[N_ - 2];
+            rho_tmp[i*N_ + N_ - 2] = d_[N_ - 2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[i*N_ + k] = d_[k] - c_[k]*rho_[i*N_ + k + 1];
+                rho_tmp[i*N_ + k] = d_[k] - c_[k]*rho_tmp[i*N_ + k + 1];
             }
         }
 
         /// For each column, apply Thomas algorithm for implicit solution
         for(size_type j = 1; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
-            d_[1] = rho_[N_ + j] + c_[1]*rho_[2*N_ + j];
+            d_[1] = -c_[1]*rho_tmp[N_ + j - 1] + (1-2*fac_)/(1+2*fac_) *
+                    rho_tmp[N_ + j] - c_[1]*rho_tmp[N_ + j + 1];
             for(size_type k = 2; k < N_-1; k++) {
-                d_[k] = ( c_[1]*rho_[(k - 1)*N_ + j] + rho_[k*N_ + j] +
-                          c_[1]*rho_[(k + 1)*N_ + j] - c_[1]*d_[k-1] )
-                          / (1.0 - c_[1]*c_[k-1]);
+                d_[k] = ( fac_*rho_tmp[k*N_ + j - 1] +
+                          (1-2*fac_)*rho_tmp[k*N_ + j] +
+                          fac_*rho_tmp[k*N_ + j + 1] +
+                          fac_*d_[k-1] ) /
+                         ( 1 + 2*fac_ + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the full time step
             rho_[(N_ - 2)*N_ + j] = d_[N_ - 2];
@@ -90,6 +96,21 @@ public:
         out_file.close();
     }
 
+    void write_reference(std::string const& filename, value_type t_f) const
+    {
+        std::ofstream out_file(filename, std::ios::out);
+
+        for(size_type i = 0; i < N_; ++i) {
+            for(size_type j = 0; j < N_; ++j)
+                out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t'
+                         << sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
+                            exp(-2*D_*t_f*M_PI*M_PI)
+                         << "\n";
+            out_file << "\n";
+        }
+        out_file.close();
+    }
+
 private:
 
     void initialize_density()
@@ -109,7 +130,7 @@ private:
 
         c_[1] = -fac_ / (1.0 + 2.0*fac_);
         for(size_type i = 2; i < N_-2; i++) {
-            c_[i] = -fac_ / (1.0 + 2.0*fac_ + fac_*c_[i-1]);
+            c_[i] = -fac_ / (1.0 + 2.0*fac_ - fac_*c_[i-1]);
         }
     }
 
@@ -124,8 +145,8 @@ private:
 
 int main(int argc, char* argv[])
 {
-    if (argc < 5) {
-        std::cerr << "Usage: " << argv[0] << " D N dt n_steps" << std::endl;
+    if (argc < 4) {
+        std::cerr << "Usage: " << argv[0] << " D N dt (n_steps)" << std::endl;
         return 1;
     }
 
@@ -137,8 +158,12 @@ int main(int argc, char* argv[])
     Diffusion2D system(D, N, dt);
     system.write_density("density_000.dat");
 
-    const value_type tmax = std::stoul(argv[4]) * dt;
     value_type time = 0;
+    value_type tmax = 10000 * dt;
+
+    if (argc > 4) {
+        tmax = std::stoul(argv[4]) * dt;
+    }
 
     timer t;
 
@@ -152,6 +177,7 @@ int main(int argc, char* argv[])
     std::cout << "Timing : " << N << " " << 1 << " " << t.get_timing() << std::endl;
 
     system.write_density("density_serial.dat");
+    system.write_reference("density_ref.dat", time);
 
     return 0;
 }
