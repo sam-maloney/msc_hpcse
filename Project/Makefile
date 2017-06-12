@@ -2,10 +2,13 @@ CXX?=g++
 
 CFLAGS=-Wall -O3 -std=c++11
 
-all: diffusion2d_serial
+all: ADI_serial RW_serial
 
-diffusion2d_serial: diffusion2d_serial.cpp timer.hpp
-	$(CXX) $(CFLAGS) -o main.exe $<
+ADI_serial: ADI_serial.cpp timer.hpp
+	$(CXX) $(CFLAGS) -o ADI.exe $<
+
+RW_serial: RW_serial.cpp timer.hpp
+	$(CXX) $(CFLAGS) -o RW.exe $<
 
 clean:
-	rm -f main.exe
+	rm -f *.exe

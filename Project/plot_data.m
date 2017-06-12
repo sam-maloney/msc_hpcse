@@ -1,8 +1,12 @@
 clear;
 
-file_name = 'density_serial.dat';
+% file_name = 'ADI_000.dat';
+file_name = 'ADI_serial.dat';
+% file_name = 'ADI_ref.dat';
 
-data = load(file_name,'-ascii');
+
+
+data = load(['Solutions/' file_name],'-ascii');
 N = sqrt(length(data));
 
 x = reshape(data(:,1),N,N)';

@@ -31,7 +31,6 @@ public:
 
         rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
-        rho_tmp.resize(Ntot, 0.0);
 
         initialize_density();
         initialize_thomas();
@@ -54,21 +53,21 @@ public:
                          ( 1 + 2*fac_ + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the half time step
-            rho_tmp[i*N_ + N_ - 2] = d_[N_ - 2];
+            rho_half[i*N_ + N_ - 2] = d_[N_ - 2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_tmp[i*N_ + k] = d_[k] - c_[k]*rho_tmp[i*N_ + k + 1];
+                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
         }
 
         /// For each column, apply Thomas algorithm for implicit solution
         for(size_type j = 1; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
-            d_[1] = -c_[1]*rho_tmp[N_ + j - 1] + (1-2*fac_)/(1+2*fac_) *
-                    rho_tmp[N_ + j] - c_[1]*rho_tmp[N_ + j + 1];
+            d_[1] = -c_[1]*rho_half[N_ + j - 1] + (1-2*fac_)/(1+2*fac_) *
+                    rho_half[N_ + j] - c_[1]*rho_half[N_ + j + 1];
             for(size_type k = 2; k < N_-1; k++) {
-                d_[k] = ( fac_*rho_tmp[k*N_ + j - 1] +
-                          (1-2*fac_)*rho_tmp[k*N_ + j] +
-                          fac_*rho_tmp[k*N_ + j + 1] +
+                d_[k] = ( fac_*rho_half[k*N_ + j - 1] +
+                          (1-2*fac_)*rho_half[k*N_ + j] +
+                          fac_*rho_half[k*N_ + j + 1] +
                           fac_*d_[k-1] ) /
                          ( 1 + 2*fac_ + fac_*c_[k-1] );
             }
@@ -78,10 +77,6 @@ public:
                 rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         }
-
-//        /// use swap instead of rho_=rho_tmp. this is much more efficient,
-//        /// because it does not have to copy element by element.
-//        std::swap(rho_tmp, rho_);
     }
 
     void write_density(std::string const& filename) const
@@ -139,7 +134,7 @@ private:
 
     value_type dh_, dt_, fac_;
 
-    std::vector<value_type> rho_, rho_half, rho_tmp, c_, d_;
+    std::vector<value_type> rho_, rho_half, c_, d_;
 };
 
 
@@ -156,7 +151,7 @@ int main(int argc, char* argv[])
 
 
     Diffusion2D system(D, N, dt);
-    system.write_density("density_000.dat");
+    system.write_density("Solutions/ADI_000.dat");
 
     value_type time = 0;
     value_type tmax = 10000 * dt;
@@ -176,8 +171,8 @@ int main(int argc, char* argv[])
 
     std::cout << "Timing : " << N << " " << 1 << " " << t.get_timing() << std::endl;
 
-    system.write_density("density_serial.dat");
-    system.write_reference("density_ref.dat", time);
+    system.write_density("Solutions/ADI_serial.dat");
+    system.write_reference("Solutions/ADI_ref.dat", time);
 
     return 0;
 }
