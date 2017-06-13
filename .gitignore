@@ -57,3 +57,7 @@ $RECYCLE.BIN/
 
 # Solution files
 Project/*.dat
+
+# SPRNG
+sprng5/*
+Project/sprng5/*
