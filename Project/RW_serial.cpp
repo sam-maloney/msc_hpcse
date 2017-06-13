@@ -8,6 +8,7 @@
 #include <cmath>
 #include <random>
 
+#include "prng_engine.hpp" // Sitmo PRNG
 #include "timer.hpp"
 
 typedef double value_type;
@@ -36,6 +37,10 @@ public:
         fac_ = M_*M_PI*M_PI/4.0;
 
         rho_.resize(Ntot, 0.0);
+        m_.resize(Ntot, 0);
+        m_tmp.resize(Ntot, 0);
+
+        eng0.seed(0);
 
         initialize_density();
     }
@@ -44,15 +49,40 @@ public:
     {
         /// Dirichlet boundaries
 
+        m_tmp = m_;
+
         for(size_type i = 1; i < N_-1; ++i) {
             for(size_type j = 1; j < N_-1; ++j) {
+                for(size_type k = 0; k < m_[i*N_ + j]; k++) {
+                    if ( static_cast<value_type>(eng0()) /
+                         static_cast<value_type>(eng0.max()) <= p_stay_ ) {
+                        continue;
+                    }
 
+                    --m_tmp[i*N_ + j];
+                    value_type direction = static_cast<value_type>(eng0()) /
+                                           static_cast<value_type>(eng0.max());
+
+                    if ( direction < 0.25 ) { // moves left
+                        ++m_tmp[i*N_ + j - 1];
+                    } else if ( direction < 0.5 ) {
+                        ++m_tmp[i*N_ + j + 1]; // moves right
+                    } else if ( direction < 0.75 ) {
+                        ++m_tmp[(i-1)*N_ + j]; // moves up
+                    } else {
+                        ++m_tmp[(i+1)*N_ + j]; // moves down
+                    }
+                }
             }
         }
 
-//        /// use swap instead of rho_=rho_half. this is much more efficient,
-//        /// because it does not have to copy element by element.
-//        std::swap(rho_half, rho_);
+        m_.swap(m_tmp);
+
+        for(size_type i = 1; i < N_-1; ++i) {
+            for(size_type j = 1; j < N_-1; ++j) {
+                rho_[i*N_ + j] = static_cast<value_type>(m_[i*N_ + j]) / fac_;
+            }
+        }
     }
 
     void write_density(std::string const& filename) const
@@ -60,8 +90,9 @@ public:
         std::ofstream out_file(filename, std::ios::out);
 
         for(size_type i = 0; i < N_; ++i) {
-            for(size_type j = 0; j < N_; ++j)
+            for(size_type j = 0; j < N_; ++j) {
                 out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t' << rho_[i*N_ + j] << "\n";
+            }
             out_file << "\n";
         }
         out_file.close();
@@ -72,11 +103,12 @@ public:
         std::ofstream out_file(filename, std::ios::out);
 
         for(size_type i = 0; i < N_; ++i) {
-            for(size_type j = 0; j < N_; ++j)
+            for(size_type j = 0; j < N_; ++j) {
                 out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t'
                          << sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
                             exp(-2*D_*t_f*M_PI*M_PI)
                          << "\n";
+            }
             out_file << "\n";
         }
         out_file.close();
@@ -91,7 +123,7 @@ private:
         for (size_type i = 0; i < N_; ++i) {
             for (size_type j = 0; j < N_; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
-                m_[i*N_ + j] = rho_[i*N_ + j] * fac_;
+                m_[i*N_ + j] = static_cast<size_type>(rho_[i*N_ + j] * fac_);
             }
         }
     }
@@ -101,7 +133,10 @@ private:
 
     value_type dh_, dt_, lambda_, fac_, p_stay_;
 
-    std::vector<value_type> rho_, m_;
+    std::vector<value_type> rho_;
+    std::vector<size_type> m_, m_tmp;
+
+    sitmo::prng_engine eng0;
 };
 
 
