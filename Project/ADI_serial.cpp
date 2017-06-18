@@ -32,6 +32,8 @@ public:
         rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
 
+        n_step_ = 0;
+
         initialize_density();
         initialize_thomas();
     }
@@ -77,6 +79,8 @@ public:
                 rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         }
+
+        n_step_++;
     }
 
     void write_density(std::string const& filename) const
@@ -91,19 +95,51 @@ public:
         out_file.close();
     }
 
-    void write_reference(std::string const& filename, value_type t_f) const
+    void write_reference(std::string const& filename)
     {
         std::ofstream out_file(filename, std::ios::out);
 
+        value_type ref_value, t_f;
+        t_f = time();
+        rms_error_ = 0.0;
+
         for(size_type i = 0; i < N_; ++i) {
-            for(size_type j = 0; j < N_; ++j)
+            for(size_type j = 0; j < N_; ++j) {
+                ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
+                            exp(-2*D_*t_f*M_PI*M_PI);
+                rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
                 out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t'
-                         << sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
-                            exp(-2*D_*t_f*M_PI*M_PI)
-                         << "\n";
+                         << ref_value << "\n";
+            }
             out_file << "\n";
         }
+        rms_error_ = sqrt(rms_error_/(N_*N_));
         out_file.close();
+    }
+
+    value_type rms_error()
+    {
+        return rms_error_;
+    }
+
+    value_type CFL()
+    {
+        return fac_;
+    }
+
+    value_type time()
+    {
+        return n_step_ * dt_;
+    }
+
+    size_type time_step()
+    {
+        return n_step_;
+    }
+
+    value_type dt()
+    {
+        return dt_;
     }
 
 private:
@@ -130,9 +166,9 @@ private:
     }
 
     value_type D_;
-    size_type N_, Ntot;
+    size_type N_, Ntot, n_step_;
 
-    value_type dh_, dt_, fac_;
+    value_type dh_, dt_, fac_, rms_error_;
 
     std::vector<value_type> rho_, rho_half, c_, d_;
 };
@@ -141,7 +177,7 @@ private:
 int main(int argc, char* argv[])
 {
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " D N dt (n_steps)" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " D N dt (tmax)" << std::endl;
         return 1;
     }
 
@@ -153,26 +189,29 @@ int main(int argc, char* argv[])
     Diffusion2D system(D, N, dt);
     system.write_density("Solutions/ADI_000.dat");
 
-    value_type time = 0;
-    value_type tmax = 10000 * dt;
+    value_type tmax ;
 
     if (argc > 4) {
-        tmax = std::stoul(argv[4]) * dt;
+        tmax = std::stoul(argv[5]);
+    } else {
+        tmax = 0.1;
     }
 
     timer t;
 
     t.start();
-    while (time < tmax) {
+    while (system.time() < tmax) {
         system.advance();
-        time += dt;
     }
     t.stop();
 
-    std::cout << "Timing : " << N << " " << 1 << " " << t.get_timing() << std::endl;
+    std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
+    std::cout << "CFL # = " << system.CFL() << std::endl;
 
     system.write_density("Solutions/ADI_serial.dat");
-    system.write_reference("Solutions/ADI_ref.dat", time);
+    system.write_reference("Solutions/ADI_ref.dat");
+
+    std::cout << "RMS Error = " << system.rms_error() << std::endl;
 
     return 0;
 }

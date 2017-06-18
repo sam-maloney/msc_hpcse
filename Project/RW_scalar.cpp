@@ -34,6 +34,13 @@ public:
         /// lambda factor (probability to move in any single direction)
         lambda_ = dt_*D_ / (dh_*dh_);
 
+        if ( lambda_ >= 0.25 ) {
+            lambda_ = 0.2;
+            dt_ = lambda_*dh_*dh_ / D_;
+            std::cout << "Time-step too small for given n, instead using dt = "
+                      << dt_ << std::endl;
+        }
+
         /// conversion factor; m_ij = fac_ * rho_ij
         fac_ = M_*M_PI*M_PI/4.0;
 
@@ -41,15 +48,16 @@ public:
         m_.resize(Ntot, 0);
         m_tmp.resize(Ntot, 0);
 
+        n_step_ = 0;
+
         initialize_density();
     }
 
     void advance()
     {
-        /// Dirichlet boundaries
-
         m_tmp = m_;
 
+        /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
             for(size_type j = 1; j < N_-1; ++j) {
                 std::binomial_distribution<> d(m_[i*N_ + j], lambda_);
@@ -67,6 +75,7 @@ public:
         }
 
         m_.swap(m_tmp);
+        n_step_++;
     }
 
     void compute_density()
@@ -91,20 +100,51 @@ public:
         out_file.close();
     }
 
-    void write_reference(std::string const& filename, value_type t_f) const
+    void write_reference(std::string const& filename)
     {
         std::ofstream out_file(filename, std::ios::out);
 
+        value_type ref_value, t_f;
+        t_f = time();
+        rms_error_ = 0.0;
+
         for(size_type i = 0; i < N_; ++i) {
             for(size_type j = 0; j < N_; ++j) {
+                ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
+                            exp(-2*D_*t_f*M_PI*M_PI);
+                rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
                 out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t'
-                         << sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
-                            exp(-2*D_*t_f*M_PI*M_PI)
-                         << "\n";
+                         << ref_value << "\n";
             }
             out_file << "\n";
         }
+        rms_error_ = sqrt(rms_error_/(N_*N_));
         out_file.close();
+    }
+
+    value_type rms_error()
+    {
+        return rms_error_;
+    }
+
+    value_type CFL()
+    {
+        return lambda_;
+    }
+
+    value_type time()
+    {
+        return n_step_ * dt_;
+    }
+
+    size_type time_step()
+    {
+        return n_step_;
+    }
+
+    value_type dt()
+    {
+        return dt_;
     }
 
 private:
@@ -122,9 +162,9 @@ private:
     }
 
     value_type D_;
-    size_type N_, Ntot, M_;
+    size_type N_, Ntot, M_, n_step_;
 
-    value_type dh_, dt_, lambda_, fac_;
+    value_type dh_, dt_, lambda_, fac_, rms_error_;
 
     std::vector<value_type> rho_;
     std::vector<size_type> m_, m_tmp;
@@ -136,7 +176,7 @@ private:
 int main(int argc, char* argv[])
 {
     if (argc < 5) {
-        std::cerr << "Usage: " << argv[0] << " D N M dt (n_steps)" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " D N M dt (tmax)" << std::endl;
         return 1;
     }
 
@@ -149,27 +189,30 @@ int main(int argc, char* argv[])
     Diffusion2D system(D, N, M, dt);
     system.write_density("Solutions/RW_000.dat");
 
-    value_type time = 0;
-    value_type tmax = 10000 * dt;
+    value_type tmax;
 
     if (argc > 5) {
-        tmax = std::stoul(argv[5]) * dt;
+        tmax = std::stoul(argv[5]);
+    } else {
+        tmax = 0.1;
     }
 
     timer t;
 
     t.start();
-    while (time < tmax) {
+    while (system.time() < tmax) {
         system.advance();
-        time += dt;
     }
     t.stop();
 
     std::cout << "Timing : " << N << " " << 1 << " " << t.get_timing() << std::endl;
+    std::cout << "CFL # = " << system.CFL() << std::endl;
 
     system.compute_density();
     system.write_density("Solutions/RW_scalar.dat");
-    system.write_reference("Solutions/RW_ref.dat", time);
+    system.write_reference("Solutions/RW_ref.dat");
+
+    std::cout << "RMS Error = " << system.rms_error() << std::endl;
 
     return 0;
 }

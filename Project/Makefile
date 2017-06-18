@@ -4,7 +4,7 @@ CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG
 
 HEADERS=timer.hpp prng_engine.hpp
 
-all: ADI_serial RW_serial
+all: ADI RW
 
 adi: ADI
 

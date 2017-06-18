@@ -136,7 +136,7 @@ public:
         seed(s);
     }
 
-        // req: 26.5.1.4 Random number engine requirements, p.908 table 117, row 4
+    // req: 26.5.1.4 Random number engine requirements, p.908 table 117, row 4
     // Creates an engine with an initial state that depends on a sequence
     // produced by one call to q.generate.
     template<class Seq>
@@ -231,7 +231,7 @@ public:
         }
 
         // we will have to generate a new block...
-        z -= (8 - _o_counter);  // discard the remainder of the current blok
+        z -= (8 - _o_counter);  // discard the remainder of the current block
         _o_counter = z % 8;     // set the pointer in the correct element in the new block
         z -= _o_counter;        // update z
         z >>= 3;                // the number of buffers is elements/8
