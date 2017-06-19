@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <algorithm>
 #include <string>
@@ -172,7 +171,6 @@ private:
 
     std::vector<value_type> rho_, rho_half, c_, d_;
 };
-
 
 int main(int argc, char* argv[])
 {
