@@ -59,9 +59,9 @@ public:
             value_type tmp3 = rho_[(i+3)*N_ + 1];
 
             d_[1]        = -c1*rho_[(i-1)*N_ + 1] + f3*tmp0 - c1*tmp1;
-            d_[N_ + 1]   = -c1*tmp0               + f3*tmp1 - c1*tmp2;
-            d_[2*N_ + 1] = -c1*tmp1               + f3*tmp2 - c1*tmp3;
-            d_[3*N_ + 1] = -c1*tmp2               + f3*tmp3 - c1*rho_[(i+4)*N_ + 1];
+            d_[1 +   N_] = -c1*tmp0               + f3*tmp1 - c1*tmp2;
+            d_[1 + 2*N_] = -c1*tmp1               + f3*tmp2 - c1*tmp3;
+            d_[1 + 3*N_] = -c1*tmp2               + f3*tmp3 - c1*rho_[(i+4)*N_ + 1];
 
             for(size_type k = 2; k < N_-1; k++) {
 
@@ -115,7 +115,7 @@ public:
                           f1*rho_[i*N_ + k] +
                           fac_*rho_[(i+1)*N_ + k] +
                           fac_*d_[k-1] ) /
-                         ( f2 + fac_*c_[k-1] );
+                        ( f2 + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the half time step
             rho_half[i*N_ + N_ - 2] = d_[N_ - 2];
@@ -124,8 +124,63 @@ public:
             }
         }
 
+        size_type j;
+
         /// For each column, apply Thomas algorithm for implicit solution
-        for(size_type j = 1; j < N_-1; ++j) {
+        /// Loop unrolled by 4 for scalar replacement and preparation for AVX
+        for(j = 1; j < N_-4; j += 4) {
+            /// First is the forward sweep in y direction
+
+            value_type tmp0 = rho_half[N_ + j];
+            value_type tmp1 = rho_half[N_ + j + 1];
+            value_type tmp2 = rho_half[N_ + j + 2];
+            value_type tmp3 = rho_half[N_ + j + 3];
+
+            d_[1]        = -c1*rho_half[N_ + j - 1] + f3*tmp0 - c1*tmp1;
+            d_[1 +   N_] = -c1*tmp0                 + f3*tmp1 - c1*tmp2;
+            d_[1 + 2*N_] = -c1*tmp1                 + f3*tmp2 - c1*tmp3;
+            d_[1 + 3*N_] = -c1*tmp2                 + f3*tmp3 - c1*rho_half[N_ + j + 4];
+
+            for(size_type k = 2; k < N_-1; k++) {
+
+                value_type tmp0 = rho_half[k*N_ + j];
+                value_type tmp1 = rho_half[k*N_ + j + 1];
+                value_type tmp2 = rho_half[k*N_ + j + 2];
+                value_type tmp3 = rho_half[k*N_ + j + 3];
+                value_type tmpc = c_[k-1];
+
+                d_[k] =        ( fac_*rho_half[k*N_ + j - 1] + f1*tmp0 +
+                                 fac_*tmp1 + fac_*d_[k-1] ) /
+                               ( f2 + fac_*tmpc );
+                d_[k +   N_] = ( fac_*tmp0 + f1*tmp1 +
+                                 fac_*tmp2 + fac_*d_[k - 1 +   N_] ) /
+                               ( f2 + fac_*tmpc );
+                d_[k + 2*N_] = ( fac_*tmp1 + f1*tmp2 +
+                                 fac_*tmp3 + fac_*d_[k - 1 + 2*N_] ) /
+                               ( f2 + fac_*tmpc );
+                d_[k + 3*N_] = ( fac_*tmp2 + f1*tmp3 +
+                                 fac_*rho_half[k*N_ + j + 4] + fac_*d_[k - 1 + 3*N_] ) /
+                               ( f2 + fac_*tmpc );
+            }
+            /// Second is the back substitution for the full time step
+            rho_[(N_ - 2)*N_ + j]     = d_[  N_ - 2];
+            rho_[(N_ - 2)*N_ + j + 1] = d_[2*N_ - 2];
+            rho_[(N_ - 2)*N_ + j + 2] = d_[3*N_ - 2];
+            rho_[(N_ - 2)*N_ + j + 3] = d_[4*N_ - 2];
+
+            for(size_type k = N_-3; k > 0; k--) {
+
+                value_type tmpc = c_[k];
+
+                rho_[k*N_ + j]     = d_[k]        - tmpc*rho_[(k + 1)*N_ + j];
+                rho_[k*N_ + j + 1] = d_[k +   N_] - tmpc*rho_[(k + 1)*N_ + j + 1];
+                rho_[k*N_ + j + 2] = d_[k + 2*N_] - tmpc*rho_[(k + 1)*N_ + j + 2];
+                rho_[k*N_ + j + 3] = d_[k + 3*N_] - tmpc*rho_[(k + 1)*N_ + j + 3];
+            }
+        }
+
+        /// Complete any remaining columns
+        for(; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
             d_[1] = -c1*rho_half[N_ + j - 1] + f3 *
                     rho_half[N_ + j] - c1*rho_half[N_ + j + 1];
@@ -134,7 +189,7 @@ public:
                           f1*rho_half[k*N_ + j] +
                           fac_*rho_half[k*N_ + j + 1] +
                           fac_*d_[k-1] ) /
-                         ( f2 + fac_*c_[k-1] );
+                        ( f2 + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the full time step
             rho_[(N_ - 2)*N_ + j] = d_[N_ - 2];
