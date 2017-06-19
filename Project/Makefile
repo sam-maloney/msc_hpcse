@@ -8,7 +8,7 @@ all: ADI RW
 
 adi: ADI
 
-ADI: ADI_serial.exe
+ADI: ADI_serial.exe ADI_scalar.exe
 
 rw: RW
 
