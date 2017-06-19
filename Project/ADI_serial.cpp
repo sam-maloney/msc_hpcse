@@ -6,7 +6,16 @@
 #include <vector>
 #include <cmath>
 
+//#define USE_TIMER
+#define USE_TSC
+
+#ifdef USE_TIMER
 #include "timer.hpp"
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+#include "tsc_x86.hpp"
+#endif // USE_TSC
 
 typedef double value_type;
 typedef std::size_t size_type;
@@ -195,15 +204,30 @@ int main(int argc, char* argv[])
         tmax = 0.1;
     }
 
+#ifdef USE_TIMER
     timer t;
-
     t.start();
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    myInt64 start, cycles;
+    start = start_tsc();
+#endif // USE_TSC
+
     while (system.time() < tmax) {
         system.advance();
     }
-    t.stop();
 
+#ifdef USE_TIMER
+    t.stop();
     std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    cycles = stop_tsc(start);
+    std::cout << "Cycles = " << cycles << std::endl;
+#endif // USE_TSC
+
     std::cout << "CFL # = " << system.CFL() << std::endl;
 
     system.write_density("Solutions/ADI_serial.dat");

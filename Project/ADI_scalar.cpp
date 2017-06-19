@@ -6,7 +6,16 @@
 #include <vector>
 #include <cmath>
 
+//#define USE_TIMER
+#define USE_TSC
+
+#ifdef USE_TIMER
 #include "timer.hpp"
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+#include "tsc_x86.hpp"
+#endif // USE_TSC
 
 typedef double value_type;
 typedef std::size_t size_type;
@@ -27,6 +36,9 @@ public:
 
         /// stencil factor
         fac_ = dt_*D_ / (2.0*dh_*dh_);
+        f1_ = 1-2*fac_;
+        f2_ = 1+2*fac_;
+        f3_ = f1_/f2_;
 
         rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
@@ -41,11 +53,7 @@ public:
     {
         /// Dirichlet boundaries; central differences in space
 
-        value_type f1 = 1-2*fac_;
-        value_type f2 = 1+2*fac_;
-        value_type f3 = f1/f2;
         value_type c1 = c_[1];
-
         size_type i;
 
         /// For each row, apply Thomas algorithm for implicit solution
@@ -58,10 +66,10 @@ public:
             value_type tmp2 = rho_[(i+2)*N_ + 1];
             value_type tmp3 = rho_[(i+3)*N_ + 1];
 
-            d_[1]        = -c1*rho_[(i-1)*N_ + 1] + f3*tmp0 - c1*tmp1;
-            d_[1 +   N_] = -c1*tmp0               + f3*tmp1 - c1*tmp2;
-            d_[1 + 2*N_] = -c1*tmp1               + f3*tmp2 - c1*tmp3;
-            d_[1 + 3*N_] = -c1*tmp2               + f3*tmp3 - c1*rho_[(i+4)*N_ + 1];
+            d_[1]        = -c1*rho_[(i-1)*N_ + 1] + f3_*tmp0 - c1*tmp1;
+            d_[1 +   N_] = -c1*tmp0               + f3_*tmp1 - c1*tmp2;
+            d_[1 + 2*N_] = -c1*tmp1               + f3_*tmp2 - c1*tmp3;
+            d_[1 + 3*N_] = -c1*tmp2               + f3_*tmp3 - c1*rho_[(i+4)*N_ + 1];
 
             for(size_type k = 2; k < N_-1; k++) {
 
@@ -69,20 +77,16 @@ public:
                 value_type tmp1 = rho_[(i+1)*N_ + k];
                 value_type tmp2 = rho_[(i+2)*N_ + k];
                 value_type tmp3 = rho_[(i+3)*N_ + k];
-                value_type tmpc = c_[k-1];
+                value_type tmpf = 1/(f2_ + fac_*c_[k-1]);
 
-                d_[k]        = ( fac_*rho_[(i-1)*N_ + k] + f1*tmp0 +
-                                 fac_*tmp1 + fac_*d_[k-1] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k +   N_] = ( fac_*tmp0 + f1*tmp1 +
-                                 fac_*tmp2 + fac_*d_[k +   N_ - 1] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k + 2*N_] = ( fac_*tmp1 + f1*tmp2 +
-                                 fac_*tmp3 + fac_*d_[k + 2*N_ - 1] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k + 3*N_] = ( fac_*tmp2 + f1*tmp3 +
-                                 fac_*rho_[(i+4)*N_ + k] + fac_*d_[k + 3*N_ - 1] ) /
-                               ( f2 + fac_*tmpc );
+                d_[k]        = ( fac_*rho_[(i-1)*N_ + k] + f1_*tmp0 +
+                                 fac_*tmp1 + fac_*d_[k-1] ) * tmpf;
+                d_[k +   N_] = ( fac_*tmp0 + f1_*tmp1 +
+                                 fac_*tmp2 + fac_*d_[k +   N_ - 1] ) * tmpf;
+                d_[k + 2*N_] = ( fac_*tmp1 + f1_*tmp2 +
+                                 fac_*tmp3 + fac_*d_[k + 2*N_ - 1] ) * tmpf;
+                d_[k + 3*N_] = ( fac_*tmp2 + f1_*tmp3 +
+                                 fac_*rho_[(i+4)*N_ + k] + fac_*d_[k + 3*N_ - 1] ) * tmpf;
             }
 
             /// Second is the back substitution for the half time step
@@ -108,14 +112,14 @@ public:
         /// Complete any remaining rows
         for(; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = -c1*rho_[(i-1)*N_ + 1] + f3 *
+            d_[1] = -c1*rho_[(i-1)*N_ + 1] + f3_ *
                     rho_[i*N_ + 1] - c1*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-1; k++) {
                 d_[k] = ( fac_*rho_[(i-1)*N_ + k] +
-                          f1*rho_[i*N_ + k] +
+                          f1_*rho_[i*N_ + k] +
                           fac_*rho_[(i+1)*N_ + k] +
                           fac_*d_[k-1] ) /
-                        ( f2 + fac_*c_[k-1] );
+                        ( f2_ + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the half time step
             rho_half[i*N_ + N_ - 2] = d_[N_ - 2];
@@ -136,10 +140,10 @@ public:
             value_type tmp2 = rho_half[N_ + j + 2];
             value_type tmp3 = rho_half[N_ + j + 3];
 
-            d_[1]        = -c1*rho_half[N_ + j - 1] + f3*tmp0 - c1*tmp1;
-            d_[1 +   N_] = -c1*tmp0                 + f3*tmp1 - c1*tmp2;
-            d_[1 + 2*N_] = -c1*tmp1                 + f3*tmp2 - c1*tmp3;
-            d_[1 + 3*N_] = -c1*tmp2                 + f3*tmp3 - c1*rho_half[N_ + j + 4];
+            d_[1]        = -c1*rho_half[N_ + j - 1] + f3_*tmp0 - c1*tmp1;
+            d_[1 +   N_] = -c1*tmp0                 + f3_*tmp1 - c1*tmp2;
+            d_[1 + 2*N_] = -c1*tmp1                 + f3_*tmp2 - c1*tmp3;
+            d_[1 + 3*N_] = -c1*tmp2                 + f3_*tmp3 - c1*rho_half[N_ + j + 4];
 
             for(size_type k = 2; k < N_-1; k++) {
 
@@ -147,20 +151,16 @@ public:
                 value_type tmp1 = rho_half[k*N_ + j + 1];
                 value_type tmp2 = rho_half[k*N_ + j + 2];
                 value_type tmp3 = rho_half[k*N_ + j + 3];
-                value_type tmpc = c_[k-1];
+                value_type tmpf = 1/(f2_ + fac_*c_[k-1]);
 
-                d_[k] =        ( fac_*rho_half[k*N_ + j - 1] + f1*tmp0 +
-                                 fac_*tmp1 + fac_*d_[k-1] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k +   N_] = ( fac_*tmp0 + f1*tmp1 +
-                                 fac_*tmp2 + fac_*d_[k - 1 +   N_] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k + 2*N_] = ( fac_*tmp1 + f1*tmp2 +
-                                 fac_*tmp3 + fac_*d_[k - 1 + 2*N_] ) /
-                               ( f2 + fac_*tmpc );
-                d_[k + 3*N_] = ( fac_*tmp2 + f1*tmp3 +
-                                 fac_*rho_half[k*N_ + j + 4] + fac_*d_[k - 1 + 3*N_] ) /
-                               ( f2 + fac_*tmpc );
+                d_[k] =        ( fac_*rho_half[k*N_ + j - 1] + f1_*tmp0 +
+                                 fac_*tmp1 + fac_*d_[k-1] ) * tmpf;
+                d_[k +   N_] = ( fac_*tmp0 + f1_*tmp1 +
+                                 fac_*tmp2 + fac_*d_[k - 1 +   N_] ) * tmpf;
+                d_[k + 2*N_] = ( fac_*tmp1 + f1_*tmp2 +
+                                 fac_*tmp3 + fac_*d_[k - 1 + 2*N_] ) * tmpf;
+                d_[k + 3*N_] = ( fac_*tmp2 + f1_*tmp3 +
+                                 fac_*rho_half[k*N_ + j + 4] + fac_*d_[k - 1 + 3*N_] ) * tmpf;
             }
             /// Second is the back substitution for the full time step
             rho_[(N_ - 2)*N_ + j]     = d_[  N_ - 2];
@@ -182,14 +182,14 @@ public:
         /// Complete any remaining columns
         for(; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
-            d_[1] = -c1*rho_half[N_ + j - 1] + f3 *
+            d_[1] = -c1*rho_half[N_ + j - 1] + f3_ *
                     rho_half[N_ + j] - c1*rho_half[N_ + j + 1];
             for(size_type k = 2; k < N_-1; k++) {
                 d_[k] = ( fac_*rho_half[k*N_ + j - 1] +
-                          f1*rho_half[k*N_ + j] +
+                          f1_*rho_half[k*N_ + j] +
                           fac_*rho_half[k*N_ + j + 1] +
                           fac_*d_[k-1] ) /
-                        ( f2 + fac_*c_[k-1] );
+                        ( f2_ + fac_*c_[k-1] );
             }
             /// Second is the back substitution for the full time step
             rho_[(N_ - 2)*N_ + j] = d_[N_ - 2];
@@ -287,7 +287,7 @@ private:
     value_type D_;
     size_type N_, Ntot, n_step_;
 
-    value_type dh_, dt_, fac_, rms_error_;
+    value_type dh_, dt_, fac_, f1_, f2_, f3_, rms_error_;
 
     std::vector<value_type> rho_, rho_half, c_, d_;
 };
@@ -315,15 +315,30 @@ int main(int argc, char* argv[])
         tmax = 0.1;
     }
 
+#ifdef USE_TIMER
     timer t;
-
     t.start();
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    myInt64 start, cycles;
+    start = start_tsc();
+#endif // USE_TSC
+
     while (system.time() < tmax) {
         system.advance();
     }
-    t.stop();
 
+#ifdef USE_TIMER
+    t.stop();
     std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    cycles = stop_tsc(start);
+    std::cout << "Cycles = " << cycles << std::endl;
+#endif // USE_TSC
+
     std::cout << "CFL # = " << system.CFL() << std::endl;
 
     system.write_density("Solutions/ADI_serial.dat");
