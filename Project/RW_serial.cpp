@@ -33,7 +33,7 @@ public:
         if ( lambda_ >= 0.25 ) {
             lambda_ = 0.2;
             dt_ = lambda_*dh_*dh_ / D_;
-            std::cout << "Time-step too small for given n, instead using dt = "
+            std::cout << "Time-step too large for given n, instead using dt = "
                       << dt_ << std::endl;
         }
 
@@ -129,27 +129,27 @@ public:
         out_file.close();
     }
 
-    value_type rms_error()
+    value_type rms_error() const
     {
         return rms_error_;
     }
 
-    value_type CFL()
+    value_type CFL() const
     {
         return lambda_;
     }
 
-    value_type time()
+    value_type time() const
     {
         return n_step_ * dt_;
     }
 
-    size_type time_step()
+    size_type time_step() const
     {
         return n_step_;
     }
 
-    value_type dt()
+    value_type dt() const
     {
         return dt_;
     }

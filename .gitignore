@@ -56,7 +56,7 @@ $RECYCLE.BIN/
 *.DS_Store
 
 # Solution files
-*.dat
+Project/Solutions/*.dat
 
 # SPRNG
 sprng5/*
