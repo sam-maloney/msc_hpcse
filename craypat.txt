@@ -13,9 +13,4 @@ export PAT_RT_TRACE_FUNCTION_ARGS=0
 
 // hardware performance counters
 
-export PAT_RT_PERFCTR="PAPI_FP_OPS,PAPI_L1_DCM"
-
-// determine HWPC names
-
-srun papi_native_avail
-srun papi_avail
+export PAT_RT_PERFCTR="PAPI_TOT_CYC,PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM"
