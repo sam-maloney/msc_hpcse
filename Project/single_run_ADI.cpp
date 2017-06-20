@@ -5,9 +5,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    const value_type D  = std::stod(argv[1]);
+    const value_type D  = std::stod (argv[1]);
     const size_type  N  = std::stoul(argv[2]);
-    const value_type dt = std::stod(argv[3]);
+    const value_type dt = std::stod (argv[3]);
 
 
     Diffusion2D system(D, N, dt);
@@ -21,15 +21,30 @@ int main(int argc, char* argv[])
         tmax = 0.1;
     }
 
+#ifdef USE_TIMER
     timer t;
-
     t.start();
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    myInt64 start, cycles;
+    start = start_tsc();
+#endif // USE_TSC
+
     while (system.time() < tmax) {
         system.advance();
     }
-    t.stop();
 
+#ifdef USE_TIMER
+    t.stop();
     std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
+#endif // USE_TIMER
+
+#ifdef USE_TSC
+    cycles = stop_tsc(start);
+    std::cout << "Cycles = " << cycles << std::endl;
+#endif // USE_TSC
+
     std::cout << "CFL # = " << system.CFL() << std::endl;
 
     system.write_density("Solutions/ADI_serial.dat");

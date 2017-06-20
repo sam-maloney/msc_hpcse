@@ -97,7 +97,8 @@ public:
 
         for(size_type i = 0; i < N_; ++i) {
             for(size_type j = 0; j < N_; ++j)
-                out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t' << rho_[i*N_ + j] << "\n";
+                out_file << (i*dh_) << '\t' << (j*dh_) << '\t'
+                         << rho_[i*N_ + j] << "\n";
             out_file << "\n";
         }
         out_file.close();
@@ -111,16 +112,31 @@ public:
         t_f = time();
         rms_error_ = 0.0;
 
-        for(size_type i = 0; i < N_; ++i) {
-            for(size_type j = 0; j < N_; ++j) {
+        for(size_type j = 0; j < N_; ++j) {
+            rms_error_ += pow(rho_[j] - 0, 2);
+            out_file << 0.0 << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
+        }
+
+        for(size_type i = 1; i < N_-1; ++i) {
+            rms_error_ += pow(rho_[i*N_] - 0, 2);
+            out_file << (i*dh_) << '\t' << 0.0 << '\t' << 0.0 << "\n";
+            for(size_type j = 1; j < N_-1; ++j) {
                 ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
                             exp(-2*D_*t_f*M_PI*M_PI);
                 rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
-                out_file << (i*dh_ - 0.5) << '\t' << (j*dh_ - 0.5) << '\t'
+                out_file << (i*dh_) << '\t' << (j*dh_) << '\t'
                          << ref_value << "\n";
             }
+            rms_error_ += pow(rho_[i*N_ + N_ - 1] - 0, 2);
+            out_file << (i*dh_) << '\t' << ((N_-1)*dh_) << '\t' << 0.0 << "\n";
             out_file << "\n";
         }
+
+        for(size_type j = 0; j < N_; ++j) {
+            rms_error_ += pow(rho_[(N_-1)*N_ + j] - 0, 2);
+            out_file << ((N_-1)*dh_) << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
+        }
+
         rms_error_ = sqrt(rms_error_/(N_*N_));
         out_file.close();
     }
@@ -155,8 +171,8 @@ private:
     void initialize_density()
     {
         /// initialize rho(x,y,t=0) = sin(pi*x)*sin(pi*y)
-        for (size_type i = 0; i < N_; ++i) {
-            for (size_type j = 0; j < N_; ++j) {
+        for (size_type i = 1; i < N_-1; ++i) {
+            for (size_type j = 1; j < N_-1; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
             }
         }

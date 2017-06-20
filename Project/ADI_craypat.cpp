@@ -6,6 +6,10 @@
 #include <vector>
 #include <cmath>
 
+#ifdef CRAYPAT
+#include <pat_api.h>
+#endif // CRAYPAT
+
 /// Select which runtime measure to use
 //#define USE_TIMER
 #define USE_TSC
@@ -317,6 +321,13 @@ private:
     std::vector<value_type> rho_, rho_half, c_, d_, c_rcp_;
 };
 
+void run_simulation(Diffusion2D &system, value_type tmax)
+{
+    while (system.time() < tmax) {
+        system.advance();
+    }
+}
+
 int main(int argc, char* argv[])
 {
     std::cout << "Beginning OVS for grid spacing..." << std:: endl;
@@ -333,6 +344,13 @@ int main(int argc, char* argv[])
 
         Diffusion2D system(D, N[i], dt);
 
+#ifdef CRAYPAT
+    char label[7];
+    snprintf(label, sizeof(label), "N_%04u", N[i]);
+    PAT_region_begin (N[i], label);
+    PAT_trace_function (run_simulation, PAT_STATE_ON);
+#endif // CRAYPAT
+
 #ifdef USE_TIMER
     timer t;
     t.start();
@@ -343,9 +361,7 @@ int main(int argc, char* argv[])
     start = start_tsc();
 #endif // USE_TSC
 
-        while (system.time() < tmax) {
-            system.advance();
-        }
+        run_simulation(system, tmax);
 
 #ifdef USE_TIMER
     t.stop();
@@ -356,6 +372,10 @@ int main(int argc, char* argv[])
     cycles = stop_tsc(start);
     std::cout << "Cycles = " << cycles << std::endl;
 #endif // USE_TSC
+
+#ifdef CRAYPAT
+    PAT_region_end (N[i]);
+#endif // CRAYPAT
 
         system.write_reference("Solutions/ADI_ref.dat");
 
