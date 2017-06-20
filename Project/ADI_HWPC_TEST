@@ -1,0 +1,21 @@
+#!/bin/bash -l
+#SBATCH --job-name=ADI_HWPC_TEST
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=00:05:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=debug
+#SBATCH --constraint=gpu
+
+module load perftools-base
+module load perftools
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export PAT_RT_CALLSTACK=0
+export PAT_RT_TRACE_FUNCTION_ARGS=0
+export PAT_RT_PERFCTR="PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM,UNHALTED_CORE_CYCLES"
+
+srun ./ADI_scalar_inst.exe 1 32 0.00001
+srun ./ADI_scalar_inst.exe 1 64 0.000001

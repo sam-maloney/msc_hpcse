@@ -6,8 +6,7 @@
 #include <vector>
 #include <cmath>
 
-#ifndef CRAYPAT
-/// Select which runtime measure to use if craypat not in use
+/// Select which runtime measure to use
 //#define USE_TIMER
 #define USE_TSC
 
@@ -18,10 +17,6 @@
 #ifdef USE_TSC
 #include "tsc_x86.hpp"
 #endif // USE_TSC
-
-#else // ifdef CRAYPAT
-#include <pat_api.h>
-#endif // CRAYPAT
 
 typedef double value_type;
 typedef std::size_t size_type;
@@ -329,7 +324,6 @@ int main(int argc, char* argv[])
         tmax = 0.1;
     }
 
-#ifndef CRAYPAT
 #ifdef USE_TIMER
     timer t;
     t.start();
@@ -340,18 +334,10 @@ int main(int argc, char* argv[])
     start = start_tsc();
 #endif // USE_TSC
 
-#else // ifdef CRAYPAT
-    char label[7];
-    snprintf(label, sizeof(label), "N_%04u", N);
-    PAT_region_begin(N, const char *label);
-    PAT_trace_function(Diffusion2D::advance, PAT_STATE_ON);
-#endif // CRAYPAT
-
     while (system.time() < tmax) {
         system.advance();
     }
 
-#ifndef CRAYPAT
 #ifdef USE_TIMER
     t.stop();
     std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
@@ -361,10 +347,6 @@ int main(int argc, char* argv[])
     cycles = stop_tsc(start);
     std::cout << "Cycles = " << cycles << std::endl;
 #endif // USE_TSC
-
-#else // ifdef CRAYPAT
-    PAT_region_end(N);
-#endif // CRAYPAT
 
     std::cout << "CFL # = " << system.CFL() << std::endl;
 
