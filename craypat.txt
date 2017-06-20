@@ -1,0 +1,21 @@
+// previewing which function entry points will be traced
+// without executing the program in its entirety
+
+export PAT_RT_EXIT_AFTER_INIT=1
+export PAT_RT_TRACE_FUNCTION_DISPLAY=1
+./inst.out
+
+// lightweight tracing
+
+export PAT_RT_CALLSTACK=0
+export PAT_RT_TRACE_FUNCTION_ARGS=0
+./inst.out
+
+// hardware performance counters
+
+export PAT_RT_PERFCTR="PAPI_FP_OPS,PAPI_L1_DCM"
+
+// determine HWPC names
+
+srun papi_native_avail
+srun papi_avail
