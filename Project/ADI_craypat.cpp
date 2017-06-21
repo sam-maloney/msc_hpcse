@@ -347,8 +347,9 @@ int main(int argc, char* argv[])
 #ifdef CRAYPAT
     char label[7];
     snprintf(label, sizeof(label), "N_%04u", N[i]);
-    PAT_region_begin (N[i], label);
-    PAT_trace_function (run_simulation, PAT_STATE_ON);
+    auto func = run_simulation;
+    PAT_region_begin(N[i], label);
+    PAT_trace_function((void*)func, PAT_STATE_ON);
 #endif // CRAYPAT
 
 #ifdef USE_TIMER

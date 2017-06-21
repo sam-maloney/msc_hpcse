@@ -319,19 +319,26 @@ private:
 
 int main(int argc, char* argv[])
 {
-    std::cout << "Beginning OVS for grid spacing..." << std:: endl;
+    if (argc < 4) {
+        std::cerr << "Usage: " << argv[0] << " D N dt (tmax)" << std::endl;
+        return 1;
+    }
 
-    const value_type D  = 1;
-    const value_type dt = 0.00000001;
-    const value_type tmax = 0.1;
-    const size_type  N[7] = {6,10,22,42,82,162,322};
+    const value_type D  = std::stod (argv[1]);
+    const size_type  N  = std::stoul(argv[2]);
+    const value_type dt = std::stod (argv[3]);
 
-    std::ofstream OVS_file("OVS/OVS_ADI_dh_2.dat", std::ios::out);
 
-    for (size_type i = 0; i <= sizeof(N); i++) {
-        std::cout << "N = " << N[i] << std::endl;
+    Diffusion2D system(D, N, dt);
+    system.write_density("Solutions/ADI_000.dat");
 
-        Diffusion2D system(D, N[i], dt);
+    value_type tmax ;
+
+    if (argc > 4) {
+        tmax = std::stoul(argv[5]);
+    } else {
+        tmax = 0.1;
+    }
 
 #ifdef USE_TIMER
     timer t;
@@ -343,13 +350,13 @@ int main(int argc, char* argv[])
     start = start_tsc();
 #endif // USE_TSC
 
-        while (system.time() < tmax) {
-            system.advance();
-        }
+    while (system.time() < tmax) {
+        system.advance();
+    }
 
 #ifdef USE_TIMER
     t.stop();
-    std::cout << "Timing: " << " " << t.get_timing() << std::endl;
+    std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
 #endif // USE_TIMER
 
 #ifdef USE_TSC
@@ -357,15 +364,13 @@ int main(int argc, char* argv[])
     std::cout << "Cycles = " << cycles << std::endl;
 #endif // USE_TSC
 
-        system.write_reference("Solutions/ADI_ref.dat");
+    std::cout << "CFL # = " << system.CFL() << std::endl;
 
-        std::cout << "RMS Error = " << system.rms_error() << std::endl;
-        std::cout << "CFL = " << system.CFL() << '\n' << std::endl;
+    system.write_density("Solutions/ADI_serial.dat");
+    system.write_reference("Solutions/ADI_ref.dat");
 
-        OVS_file << N[i] << '\t' << system.rms_error() << '\n';
-    }
-
-    OVS_file.close();
+    std::cout << "RMS Error = " << system.rms_error() << std::endl;
 
     return 0;
 }
+

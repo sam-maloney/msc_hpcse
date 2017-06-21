@@ -1,0 +1,20 @@
+#!/bin/bash -l
+#SBATCH --job-name=ADI_HWPC_SCALAR
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=10:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+
+module load perftools-base
+module load perftools
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export PAT_RT_CALLSTACK=0
+export PAT_RT_TRACE_FUNCTION_ARGS=0
+export PAT_RT_PERFCTR="PAPI_TOT_CYC,PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM"
+
+srun ./ADI_craypat_inst.exe

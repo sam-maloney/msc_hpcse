@@ -1,0 +1,52 @@
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Beginning OVS for grid spacing...
+N = 6
+Cycles = 1782059087
+RMS Error = 0.00383101
+CFL = 1.25e-07
+
+N = 10
+Cycles = 6862823648
+RMS Error = 0.00126035
+CFL = 4.05e-07
+
+N = 22
+Cycles = 44584690471
+RMS Error = 0.000244337
+CFL = 2.205e-06
+
+N = 42
+Cycles = 182155198924
+RMS Error = 6.54993e-05
+CFL = 8.405e-06
+
+N = 82
+Cycles = 731394148573
+RMS Error = 1.68812e-05
+CFL = 3.2805e-05
+
+N = 162
+pat[WARNING][0]: region exceeds max id of 100 - BEGIN region 162 'N_0162' ignored
+Cycles = 3144367502200
+RMS Error = 1.68338e-06
+CFL = 0.000129605
+
+N = 322
+pat[WARNING][0]: region exceeds max id of 100 - BEGIN region 322 'N_0322' ignored
+Cycles = 12421187414902
+RMS Error = 0.000375841
+CFL = 0.000515205
+
+N = 10425240
+terminate called after throwing an instance of 'std::bad_alloc'
+  what():  std::bad_alloc
+pat[WARNING][0]: abort process 8839 because of signal 6
+Experiment data file written:
+/scratch/snx3000/stud09/Project/ADI_craypat_inst.exe+8839-1956t.xf
+srun: error: nid01956: task 0: Aborted
+srun: Terminating job step 2071426.0
