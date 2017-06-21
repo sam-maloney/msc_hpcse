@@ -81,7 +81,7 @@ public:
             d_[6] =  c1tmp1                + f3_*tmp2 - c1*tmp3;
             d_[7] =  c1tmp2                + f3_*tmp3 - c1*rho_[(i+4)*N_ + 1];
 
-            for(size_type k = 2; k < N_-1; k++) {
+            for(size_type k = 2; k < N_-2; k++) {
 
                 value_type tmp0 = rho_[    i*N_ + k];
                 value_type tmp1 = rho_[(i+1)*N_ + k];
@@ -121,10 +121,22 @@ public:
             }
 
             /// Second is the back substitution for the half time step
-            rho_half[    i*N_ + N_ - 2] = d_[4*N_ - 8];
-            rho_half[(i+1)*N_ + N_ - 2] = d_[4*N_ - 7];
-            rho_half[(i+2)*N_ + N_ - 2] = d_[4*N_ - 6];
-            rho_half[(i+3)*N_ + N_ - 2] = d_[4*N_ - 5];
+            tmp0 = rho_[(i+1)*N_ - 2];
+            tmp1 = rho_[(i+2)*N_ - 2];
+            tmp2 = rho_[(i+3)*N_ - 2];
+            tmp3 = rho_[(i+4)*N_ - 2];
+            value_type tmpf = c_rcp_[N_-2];
+            value_type fac_tmp1 = fac_*tmp1;
+            value_type fac_tmp2 = fac_*tmp2;
+
+            rho_half[(i+1)*N_ - 2] = ( fac_*rho_[i*N_ - 2] + f1_*tmp0 +
+                            fac_tmp1  + fac_*d_[4*N_ - 12] ) * tmpf;
+            rho_half[(i+2)*N_ - 2] = ( fac_*tmp0 + f1_*tmp1 +
+                            fac_tmp2  + fac_*d_[4*N_ - 11] ) * tmpf;
+            rho_half[(i+3)*N_ - 2] = ( fac_tmp1  + f1_*tmp2 +
+                            fac_*tmp3 + fac_*d_[4*N_ - 10] ) * tmpf;
+            rho_half[(i+4)*N_ - 2] = ( fac_tmp2  + f1_*tmp3 +
+                            fac_*rho_[(i+5)*N_ - 2] + fac_*d_[4*N_ - 9] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
 
@@ -177,7 +189,7 @@ public:
             d_[6] =  c1tmp1                  + f3_*tmp2 - c1*tmp3;
             d_[7] =  c1tmp2                  + f3_*tmp3 - c1*rho_half[N_ + j + 4];
 
-            for(size_type k = 2; k < N_-1; k++) {
+            for(size_type k = 2; k < N_-2; k++) {
 
                 value_type tmp0 = rho_half[k*N_ + j];
                 value_type tmp1 = rho_half[k*N_ + j + 1];
@@ -197,10 +209,22 @@ public:
                                 fac_*rho_half[k*N_ + j + 4] + fac_*d_[(k-1)*4 + 3] ) * tmpf;
             }
             /// Second is the back substitution for the full time step
-            rho_[(N_ - 2)*N_ + j]     = d_[4*N_ - 8];
-            rho_[(N_ - 2)*N_ + j + 1] = d_[4*N_ - 7];
-            rho_[(N_ - 2)*N_ + j + 2] = d_[4*N_ - 6];
-            rho_[(N_ - 2)*N_ + j + 3] = d_[4*N_ - 5];
+            tmp0 = rho_half[(N_-2)*N_ + j];
+            tmp1 = rho_half[(N_-2)*N_ + j + 1];
+            tmp2 = rho_half[(N_-2)*N_ + j + 2];
+            tmp3 = rho_half[(N_-2)*N_ + j + 3];
+            value_type tmpf = c_rcp_[N_-2];
+            value_type fac_tmp1 = fac_*tmp1;
+            value_type fac_tmp2 = fac_*tmp2;
+
+            rho_[(N_-2)*N_ + j] = ( fac_*rho_half[(N_-2)*N_ + j - 1] + f1_*tmp0 +
+                            fac_tmp1  + fac_*d_[4*N_ - 12] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 1] = ( fac_*tmp0 + f1_*tmp1 +
+                            fac_tmp2  + fac_*d_[4*N_ - 11] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 2] = ( fac_tmp1  + f1_*tmp2 +
+                            fac_*tmp3 + fac_*d_[4*N_ - 10] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 3] = ( fac_tmp2  + f1_*tmp3 +
+                            fac_*rho_half[(N_-2)*N_ + j + 4] + fac_*d_[4*N_ - 9] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
 
