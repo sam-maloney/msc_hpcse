@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <cmath>
+#include <x86intrin.h>
 
 /// Select which runtime measure to use
 //#define USE_TIMER
@@ -57,6 +58,12 @@ public:
         value_type c1 = c_[1];
         size_type i;
 
+        __m256d fac_v = _mm256_set1_pd(fac_ );
+        __m256d f1_v  = _mm256_set1_pd(f1_  );
+        __m256d f2_v  = _mm256_set1_pd(f2_  );
+        __m256d f3_v  = _mm256_set1_pd(f3_  );
+        __m256d c1_v  = _mm256_set1_pd(c_[1]);
+
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 4 for scalar replacement and preparation for AVX
         for(i = 1; i < N_-4; i += 4) {
@@ -83,6 +90,25 @@ public:
                 value_type tmpf = c_rcp_[k];
                 value_type fac_tmp1 = fac_*tmp1;
                 value_type fac_tmp2 = fac_*tmp2;
+
+//                __m256d rho_uv = _mm256_set_pd (rho_[(i-1)*N_ + k], rho_[    i*N_ + k],
+//                                                rho_[(i+1)*N_ + k], rho_[(i+2)*N_ + k]);
+//                __m256d rho_cv = _mm256_set_pd (rho_[    i*N_ + k], rho_[(i+1)*N_ + k],
+//                                                rho_[(i+2)*N_ + k], rho_[(i+3)*N_ + k]);
+//                __m256d rho_dv = _mm256_set_pd (rho_[(i+1)*N_ + k], rho_[(i+2)*N_ + k],
+//                                                rho_[(i+3)*N_ + k], rho_[(i+4)*N_ + k]);
+//                __m256d d_pr_v = _mm256_loadu_pd(d_.data() + (k-1)*4);
+//                __m256d rcp_v  = _mm256_set1_pd(c_rcp_[k]);
+//
+//                __m256d tmp_v0, tmp_v1, tmp_v2, tmp_v3, tmp_v4;
+//
+//                tmp_v0 = _mm256_mul_pd   (fac_v, rho_uv);
+//                tmp_v1 = _mm256_fmadd_pd (f1_v , rho_cv, tmp_v0);
+//                tmp_v2 = _mm256_fmadd_pd (fac_v, rho_dv, tmp_v1);
+//                tmp_v3 = _mm256_fmadd_pd (fac_v, d_pr_v, tmp_v2);
+//                tmp_v4 = _mm256_mul_pd   (rcp_v, tmp_v3);
+//
+//                _mm256_storeu_pd (d_.data() + k*4, tmp_v4);
 
                 d_[k*4]     = ( fac_*rho_[(i-1)*N_ + k] + f1_*tmp0 +
                                 fac_tmp1  + fac_*d_[(k-1)*4] ) * tmpf;
@@ -178,12 +204,12 @@ public:
 
             for(size_type k = N_-3; k > 0; k--) {
 
-                value_type tmpc = c_[k];
+                __m256d c_v = _mm256_set1_pd(-c_[k]);
+                __m256d d_v = _mm256_loadu_pd(d_.data() + k*4);
+                __m256d rho_pr_v = _mm256_loadu_pd(rho_.data() + (k + 1)*N_ + j);
 
-                rho_[k*N_ + j]     = d_[k*4]     - tmpc*rho_[(k + 1)*N_ + j];
-                rho_[k*N_ + j + 1] = d_[k*4 + 1] - tmpc*rho_[(k + 1)*N_ + j + 1];
-                rho_[k*N_ + j + 2] = d_[k*4 + 2] - tmpc*rho_[(k + 1)*N_ + j + 2];
-                rho_[k*N_ + j + 3] = d_[k*4 + 3] - tmpc*rho_[(k + 1)*N_ + j + 3];
+                __m256d tmp_v = _mm256_fmadd_pd(c_v, rho_pr_v, d_v);
+                _mm256_storeu_pd(rho_.data() + k*N_ + j, tmp_v);
             }
         }
 
@@ -366,7 +392,7 @@ int main(int argc, char* argv[])
 
     std::cout << "CFL # = " << system.CFL() << std::endl;
 
-    system.write_density("Solutions/ADI_scalar.dat");
+    system.write_density("Solutions/ADI_AVX.dat");
     system.write_reference("Solutions/ADI_ref.dat");
 
     std::cout << "RMS Error = " << system.rms_error() << std::endl;

@@ -1,6 +1,6 @@
-CXX?=g++
+CXX=icpc
 
-CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG
+CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG -march=core-avx2
 
 HEADERS=timer.hpp prng_engine.hpp
 
@@ -8,7 +8,7 @@ all: ADI RW
 
 adi: ADI
 
-ADI: ADI_serial.exe ADI_scalar.exe
+ADI: ADI_serial.exe ADI_scalar.exe ADI_AVX.exe
 
 rw: RW
 
