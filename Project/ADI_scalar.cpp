@@ -35,6 +35,11 @@ public:
         /// real space grid spacing
         dh_ = 1.0 / (N_ - 1);
 
+        /// stencil factor
+        fac_ = dt_*D_ / (2.0*dh_*dh_);
+        f1_ = 1/fac_ - 2;
+        f2_ = 1+2*fac_;
+
         rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
 
@@ -42,12 +47,6 @@ public:
 
         initialize_density();
         initialize_thomas();
-
-        /// stencil factor
-        fac_ = dt_*D_ / (2.0*dh_*dh_);
-        f1_ = 1/fac_ - 2;
-        f2_ = 1+2*fac_;
-        f3_ = (1-2*fac_)/(-c_[1]*f2_);
     }
 
     void advance()
@@ -66,13 +65,11 @@ public:
             value_type tmp1 = rho_[(i+1)*N_ + 1];
             value_type tmp2 = rho_[(i+2)*N_ + 1];
             value_type tmp3 = rho_[(i+3)*N_ + 1];
-//            value_type c1tmp1 = c1*tmp1;
-//            value_type c1tmp2 = c1*tmp2;
 
-            d_[4] = c1*(rho_[(i-1)*N_ + 1] + f3_*tmp0) + c1*tmp1;
-            d_[5] = c1*(tmp0               + f3_*tmp1) + c1*tmp2;
-            d_[6] = c1*(tmp1               + f3_*tmp2) + c1*tmp3;
-            d_[7] = c1*(tmp2               + f3_*tmp3) + c1*rho_[(i+4)*N_ + 1];
+            d_[4] = c1*(rho_[(i-1)*N_ + 1] + f1_*tmp0) + c1*tmp1;
+            d_[5] = c1*(tmp0               + f1_*tmp1) + c1*tmp2;
+            d_[6] = c1*(tmp1               + f1_*tmp2) + c1*tmp3;
+            d_[7] = c1*(tmp2               + f1_*tmp3) + c1*rho_[(i+4)*N_ + 1];
 
             for(size_type k = 2; k < N_-2; k++) {
 
@@ -125,8 +122,8 @@ public:
         /// Complete any remaining rows
         for(; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f3_*rho_[i*N_ + 1]) +
-                    c1* rho_[(i+1)*N_ + 1];
+            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
+                    c1*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-1; k++) {
                 d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
                           rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
@@ -149,13 +146,11 @@ public:
             value_type tmp1 = rho_half[N_ + j + 1];
             value_type tmp2 = rho_half[N_ + j + 2];
             value_type tmp3 = rho_half[N_ + j + 3];
-//            value_type c1tmp1 = -c1*tmp1;
-//            value_type c1tmp2 = -c1*tmp2;
 
-            d_[4] = c1*(rho_half[N_ + j - 1] + f3_*tmp0) + c1*tmp1;
-            d_[5] = c1*(tmp0                 + f3_*tmp1) + c1*tmp2;
-            d_[6] = c1*(tmp1                 + f3_*tmp2) + c1*tmp3;
-            d_[7] = c1*(tmp2                 + f3_*tmp3) + c1*rho_half[N_ + j + 4];
+            d_[4] = c1*(rho_half[N_ + j - 1] + f1_*tmp0) + c1*tmp1;
+            d_[5] = c1*(tmp0                 + f1_*tmp1) + c1*tmp2;
+            d_[6] = c1*(tmp1                 + f1_*tmp2) + c1*tmp3;
+            d_[7] = c1*(tmp2                 + f1_*tmp3) + c1*rho_half[N_ + j + 4];
 
             for(size_type k = 2; k < N_-2; k++) {
 
@@ -204,8 +199,8 @@ public:
         /// Complete any remaining columns
         for(; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
-            d_[1] = c1*(rho_half[N_ + j - 1] + f3_*rho_half[N_ + j]) +
-                    c1* rho_half[N_ + j + 1];
+            d_[1] = c1*(rho_half[N_ + j - 1] + f1_*rho_half[N_ + j]) +
+                    c1*rho_half[N_ + j + 1];
             for(size_type k = 2; k < N_-1; k++) {
                 d_[k] = ( rho_half[k*N_ + j - 1] + f1_*rho_half[k*N_ + j] +
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
@@ -324,7 +319,7 @@ private:
     value_type D_;
     size_type N_, Ntot, n_step_;
 
-    value_type dh_, dt_, fac_, f1_, f2_, f3_, rms_error_;
+    value_type dh_, dt_, fac_, f1_, f2_, rms_error_;
 
     std::vector<value_type> rho_, rho_half, c_, d_, c_rcp_;
 };
