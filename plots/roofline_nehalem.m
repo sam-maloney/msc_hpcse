@@ -2,22 +2,26 @@ clear;
 left = -5;
 right = 7;
 bottom = -1;
-top = 3;
+top = 5;
 
-memory_bandwidth = 21; % GB/s
-clock_speed = 1.6; % GHz
-scalar_peak = 2;
-vector_peak = 2*scalar_peak;
+memory_bandwidth = 68; % GB/s
+clock_speed = 2.6; % GHz
+scalar_peak = 4;
+vector_peak = 4*scalar_peak;
 
 % beta for main memory
 betaRAM = memory_bandwidth*2^30/(clock_speed*10^9);
 
-% beta for L3 cache
-betaL3 = 64/5.75 + 64/10.4;
+% betas for caches
+betaL3 = 64/6.3 + 64/8.4;
+betaL2 = 64/6.1 + 64/2.2;
+betaL1 = 64/0.5;
 
 I = [2^left 2^right];
 MRAM = betaRAM*I;
 ML3 = betaL3*I;
+ML2 = betaL2*I;
+ML1 = betaL1*I;
 pi_s = [scalar_peak scalar_peak];
 pi_v = [vector_peak vector_peak];
 
@@ -73,6 +77,8 @@ plot(log2(I),log2(pi_s),'-k');
 plot(log2(I),log2(pi_v),'-k');
 plot(log2(I),log2(MRAM),'-k');
 plot(log2(I),log2(ML3), '-k');
+plot(log2(I),log2(ML2), '-k');
+plot(log2(I),log2(ML1), '-k');
 
 
 % h = text(log2(0.125),log2(4.4),'L3 Bandwidth');
@@ -100,7 +106,7 @@ horzOffset = (right - left)*0.3;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
-h = title('Core i7-720QM','FontSize', 15);
+h = title('Xeon E5-2690 v3','FontSize', 15);
 vertOffset = (top - bottom)*0.08;
 horzOffset = (right - left)*-0.305;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
