@@ -1,0 +1,9 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+Running Scalar Simulations
+N = 82	dt = 1e-06
+Minimum Cycles over 100 runs = 6752096802
+
+Running AVX Simulations
+N = 82	dt = 1e-06
+Minimum Cycles over 100 runs = 6484253672
+

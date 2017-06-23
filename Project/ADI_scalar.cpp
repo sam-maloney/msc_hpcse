@@ -235,35 +235,46 @@ public:
 
         value_type ref_value, t_f;
         t_f = time();
-        rms_error_ = 0.0;
 
         for(size_type j = 0; j < N_; ++j) {
-            rms_error_ += pow(rho_[j] - 0, 2);
             out_file << 0.0 << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
         }
 
         for(size_type i = 1; i < N_-1; ++i) {
-            rms_error_ += pow(rho_[i*N_] - 0, 2);
             out_file << (i*dh_) << '\t' << 0.0 << '\t' << 0.0 << "\n";
             for(size_type j = 1; j < N_-1; ++j) {
                 ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
                             exp(-2*D_*t_f*M_PI*M_PI);
-                rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
                 out_file << (i*dh_) << '\t' << (j*dh_) << '\t'
                          << ref_value << "\n";
             }
-            rms_error_ += pow(rho_[i*N_ + N_ - 1] - 0, 2);
             out_file << (i*dh_) << '\t' << ((N_-1)*dh_) << '\t' << 0.0 << "\n";
             out_file << "\n";
         }
 
         for(size_type j = 0; j < N_; ++j) {
-            rms_error_ += pow(rho_[(N_-1)*N_ + j] - 0, 2);
             out_file << ((N_-1)*dh_) << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
         }
 
-        rms_error_ = sqrt(rms_error_/(N_*N_));
         out_file.close();
+    }
+    
+    value_type compute_rms_error()
+    {
+        rms_error_ = 0.0;
+        value_type t_f = time();
+
+        for(size_type i = 0; i < N_; i++) {
+            for(size_type j = 0; j < N_; j++) {
+                value_type ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
+                                       exp(-2*D_*t_f*M_PI*M_PI);
+                rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
+            }
+        }
+
+        rms_error_ = sqrt(rms_error_/(N_*N_));
+
+        return rms_error_;
     }
 
     value_type rms_error() const
@@ -335,10 +346,6 @@ int main(int argc, char* argv[])
     const size_type  N  = std::stoul(argv[2]);
     const value_type dt = std::stod (argv[3]);
 
-
-    Diffusion2D system(D, N, dt);
-    system.write_density("Solutions/ADI_000.dat");
-
     value_type tmax ;
 
     if (argc > 4) {
@@ -347,7 +354,13 @@ int main(int argc, char* argv[])
         tmax = 0.1;
     }
 
-    std::cout << "N = " << N << std::endl;
+    std::cout << "Running Scalar Simulations" << '\n';
+    std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
+
+    myInt64 minCycles = 0;
+
+    for(size_type i = 0; i < 100; i++) { 
+    Diffusion2D system(D, N, dt);
 
 #ifdef USE_TIMER
     timer t;
@@ -365,20 +378,22 @@ int main(int argc, char* argv[])
 
 #ifdef USE_TIMER
     t.stop();
-    std::cout << "Timing: " << N << " " << t.get_timing() << std::endl;
 #endif // USE_TIMER
 
 #ifdef USE_TSC
     cycles = stop_tsc(start);
-    std::cout << "Cycles = " << cycles << std::endl;
+//    std::cout << "Cycles = " << cycles << std::endl;
 #endif // USE_TSC
 
-    std::cout << "CFL # = " << system.CFL() << std::endl;
+    system.compute_rms_error();
 
-    system.write_density("Solutions/ADI_scalar.dat");
-    system.write_reference("Solutions/ADI_ref.dat");
+    if ( (system.rms_error() < 0.001) && ( (cycles < minCycles) || (minCycles == 0) ) ) {
+        minCycles = cycles;
+    }
+    }
 
-    std::cout << "RMS Error = " << system.rms_error() << '\n' << std::endl;
+    std::cout << "Minimum Cycles over 100 runs = " << minCycles << '\n' << std::endl;
+//    std::cout << "RMS Error = " << system.rms_error() << '\n' << std::endl;
 
     return 0;
 }
