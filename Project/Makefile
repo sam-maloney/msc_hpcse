@@ -3,6 +3,11 @@ ifeq ($(OS),Windows_NT)
 	CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG -march=native
 	ADI_FILES=ADI_serial.exe ADI_scalar.exe
 	RW_FILES=RW_serial.exe RW_scalar.exe
+else ifeq ($(USER),stud09)
+	CXX=CC
+	CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG -march=core-avx2 -fno-alias
+	ADI_FILES=ADI_serial.exe ADI_scalar.exe ADI_AVX.exe
+	RW_FILES=RW_serial.exe RW_scalar.exe
 else
 	CXX=icpc
 	CFLAGS=-Wall -O3 -std=c++11 -DNDEBUG -march=core-avx2 -fno-alias

@@ -1,0 +1,16 @@
+#!/bin/bash -l
+#SBATCH --job-name=ADI_AVX_TEST
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=00:30:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+srun ./ADI_AVX_original.exe 1 82 0.000001
+srun ./ADI_AVX_simple.exe 1 82 0.000001
+srun ./ADI_AVX_complex.exe 1 82 0.000001

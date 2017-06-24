@@ -1,8 +1,5 @@
 #include <iostream>
-#include <algorithm>
-#include <string>
 #include <fstream>
-#include <cassert>
 #include <vector>
 #include <cmath>
 #include <x86intrin.h>
@@ -11,9 +8,9 @@
 //#define USE_TIMER
 #define USE_TSC
 
-#ifdef USE_TIMER
+//#ifdef USE_TIMER
 #include "timer.hpp"
-#endif // USE_TIMER
+//#endif // USE_TIMER
 
 #ifdef USE_TSC
 #include "tsc_x86.hpp"
@@ -25,20 +22,6 @@ typedef std::size_t size_type;
 #ifndef M_PI
     constexpr value_type M_PI = 3.14159265358979323846;
 #endif // M_PI
-
-#define _MM256_TRANSPOSE4_PD(row0,row1,row2,row3) {    \
-    __m256d tmp0, tmp1, tmp2, tmp3;                    \
-                                                       \
-    tmp0 = _mm256_shuffle_pd((row0),(row1), 0x0);      \
-    tmp2 = _mm256_shuffle_pd((row0),(row1), 0xF);      \
-    tmp1 = _mm256_shuffle_pd((row2),(row3), 0x0);      \
-    tmp3 = _mm256_shuffle_pd((row2),(row3), 0xF);      \
-                                                       \
-    (row0) = _mm256_permute2f128_pd(tmp0, tmp1, 0x20); \
-    (row1) = _mm256_permute2f128_pd(tmp2, tmp3, 0x20); \
-    (row2) = _mm256_permute2f128_pd(tmp0, tmp1, 0x31); \
-    (row3) = _mm256_permute2f128_pd(tmp2, tmp3, 0x31); \
-}
 
 class Diffusion2D {
 public:
@@ -77,7 +60,6 @@ public:
         /// Loop unrolled by 4 for scalar replacement and preparation for AVX
         for(i = 1; i < N_-4; i += 4) {
             /// First is the forward sweep in x direction
-
             value_type tmp0 = rho_[    i*N_ + 1];
             value_type tmp1 = rho_[(i+1)*N_ + 1];
             value_type tmp2 = rho_[(i+2)*N_ + 1];
@@ -104,26 +86,6 @@ public:
                                 d_[(k-1)*4 + 2] ) * tmpf;
                 d_[k*4 + 3] = ( tmp2 + f1_*tmp3 + rho_[(i+4)*N_ + k] +
                                 d_[(k-1)*4 + 3] ) * tmpf;
-
-//                __m256d rho_uv = _mm256_set_pd (rho_[(i-1)*N_ + k], rho_[    i*N_ + k],
-//                                                rho_[(i+1)*N_ + k], rho_[(i+2)*N_ + k]);
-//                __m256d rho_cv = _mm256_set_pd (rho_[    i*N_ + k], rho_[(i+1)*N_ + k],
-//                                                rho_[(i+2)*N_ + k], rho_[(i+3)*N_ + k]);
-//                __m256d rho_dv = _mm256_set_pd (rho_[(i+1)*N_ + k], rho_[(i+2)*N_ + k],
-//                                                rho_[(i+3)*N_ + k], rho_[(i+4)*N_ + k]);
-//                __m256d d_pr_v = _mm256_loadu_pd(d_.data() + (k-1)*4);
-//                __m256d rcp_v  = _mm256_set1_pd(c_rcp_[k]);
-//
-//                __m256d tmp_v0, tmp_v1, tmp_v2, tmp_v3, tmp_v4;
-//
-//                tmp_v0 = _mm256_mul_pd   (fac_v, rho_uv);
-//                tmp_v1 = _mm256_fmadd_pd (f1_v , rho_cv, tmp_v0);
-//                tmp_v2 = _mm256_fmadd_pd (fac_v, rho_dv, tmp_v1);
-//                tmp_v3 = _mm256_fmadd_pd (fac_v, d_pr_v, tmp_v2);
-//                tmp_v4 = _mm256_mul_pd   (rcp_v, tmp_v3);
-//
-//                _mm256_storeu_pd (d_.data() + k*4, tmp_v4);
-
             }
 
             /// Second is the back substitution for the half time step
@@ -172,10 +134,10 @@ public:
             }
         }
 
-        size_type j;
-
+        
         /// For each column, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 4 for scalar replacement and preparation for AVX
+        /// Loop unrolled by 4 for data reuse and AVX
+        size_type j;
         for(j = 1; j < N_-4; j += 4) {
             /// First is the forward sweep in y direction
             __m256d rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + N_ + j - 1);
@@ -190,56 +152,7 @@ public:
 
             _mm256_storeu_pd(d_.data() + 4, tmp2_v);
 
-            size_type k = 2;
-
-//            __m256d d_prv_v1, d_prv_v2;
-//            __m256d c_rcp_v1 = _mm256_set1_pd (c_rcp_[3]);
-//            __m256d c_rcp_v2 = _mm256_set1_pd (c_rcp_[4]);
-//            __m256d rho_half_lv1 = _mm256_loadu_pd(rho_half.data() + 3*N_ + j - 1);
-//            __m256d rho_half_cv1 = _mm256_loadu_pd(rho_half.data() + 3*N_ + j    );
-//            __m256d rho_half_rv1 = _mm256_loadu_pd(rho_half.data() + 3*N_ + j + 1);
-//            __m256d rho_half_lv2 = _mm256_loadu_pd(rho_half.data() + 4*N_ + j - 1);
-//            __m256d rho_half_cv2 = _mm256_loadu_pd(rho_half.data() + 4*N_ + j    );
-//            __m256d rho_half_rv2 = _mm256_loadu_pd(rho_half.data() + 4*N_ + j + 1);
-//            i
-//            /// loop unrolled by a factor of 3 for pipelining (slower)
-//            for(k = 2; k < N_-4; k += 3) {
-//              __m256d tmp0_v = _mm256_fmadd_pd(f1_v    , rho_half_cv0, rho_half_lv0);
-//              __m256d tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_half_rv0, d_prv_v0    );
-//              rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + (k+3)*N_ + j - 1);
-//              rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + (k+3)*N_ + j    );
-//              rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + (k+3)*N_ + j + 1);
-//
-//              __m256d tmp2_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v, tmp1_v);
-//              c_rcp_v0 = _mm256_set1_pd(c_rcp_[k+3]);
-//              d_prv_v1 = _mm256_mul_pd (tmp2_v, c_rcp_v1);
-//              _mm256_storeu_pd(d_.data() + 4*k, tmp2_v);
-//
-//              __m256d tmp3_v = _mm256_fmadd_pd(f1_v    , rho_half_cv1, rho_half_lv1);
-//              __m256d tmp4_v = _mm256_fmadd_pd(c_rcp_v1, rho_half_rv1, d_prv_v1    );
-//              rho_half_lv1 = _mm256_loadu_pd(rho_half.data() + (k+4)*N_ + j - 1);
-//              rho_half_cv1 = _mm256_loadu_pd(rho_half.data() + (k+4)*N_ + j    );
-//              rho_half_rv1 = _mm256_loadu_pd(rho_half.data() + (k+4)*N_ + j + 1);
-//
-//              __m256d tmp5_v = _mm256_fmadd_pd(c_rcp_v1, tmp3_v, tmp4_v);
-//              c_rcp_v1 = _mm256_set1_pd(c_rcp_[k+4]);
-//              d_prv_v2 = _mm256_mul_pd (tmp5_v, c_rcp_v2);
-//              _mm256_storeu_pd(d_.data() + 4*k + 4, tmp5_v);
-//
-//              __m256d tmp6_v = _mm256_fmadd_pd(f1_v    , rho_half_cv2, rho_half_lv2);
-//              __m256d tmp7_v = _mm256_fmadd_pd(c_rcp_v2, rho_half_rv2, d_prv_v2    );
-//              rho_half_lv2 = _mm256_loadu_pd(rho_half.data() + (k+5)*N_ + j - 1);
-//              rho_half_cv2 = _mm256_loadu_pd(rho_half.data() + (k+5)*N_ + j    );
-//              rho_half_rv2 = _mm256_loadu_pd(rho_half.data() + (k+5)*N_ + j + 1);
-//
-//              __m256d tmp8_v = _mm256_fmadd_pd(c_rcp_v2, tmp6_v, tmp7_v);
-//              c_rcp_v2 = _mm256_set1_pd(c_rcp_[k+5]);
-//              d_prv_v0 = _mm256_mul_pd (tmp8_v, c_rcp_v0);
-//              _mm256_storeu_pd(d_.data() + 4*k + 8, tmp8_v);
-//            }
-
-            /// complete any remaining rows
-            for(; k < N_-2; k += 1) {
+            for(size_type k = 2; k < N_-2; k += 1) {
               __m256d rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j - 1);
               __m256d rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j    );
               __m256d rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j + 1);
@@ -404,18 +317,18 @@ private:
         }
     }
 
-    value_type D_;
     size_type N_, Ntot, n_step_;
-
-    value_type dh_, dt_, fac_, f1_, f2_, rms_error_;
-
+    value_type D_, dh_, dt_, fac_, f1_, f2_, rms_error_;
     std::vector<value_type> rho_, rho_half, c_, d_, c_rcp_;
 };
 
 int main(int argc, char* argv[])
 {
+    timer t_total;
+    t_total.start();
+ 
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " D N dt (tmax)" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " D N dt (t_max)" << std::endl;
         return 1;
     }
 
@@ -423,20 +336,22 @@ int main(int argc, char* argv[])
     const size_type  N  = std::stoul(argv[2]);
     const value_type dt = std::stod (argv[3]);
 
-    value_type tmax ;
+    value_type t_max ;
 
     if (argc > 4) {
-        tmax = std::stoul(argv[5]);
+        t_max = std::stoul(argv[5]);
     } else {
-        tmax = 0.1;
+        t_max = 0.1;
     }
 
     std::cout << "Running AVX Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
-    myInt64 minCycles = 0;
+    myInt64 min_cycles = 0;
+    value_type e_rms;
+    size_type n_runs = 1;
 
-    for(size_type i = 0; i < 100; i++) {
+    for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
 
 #ifdef USE_TIMER
@@ -449,7 +364,7 @@ int main(int argc, char* argv[])
         start = start_tsc();
 #endif // USE_TSC
 
-        while (system.time() < tmax) {
+        while (system.time() < t_max) {
             system.advance();
         }
 
@@ -464,14 +379,32 @@ int main(int argc, char* argv[])
 #endif // USE_TSC
 
         system.compute_rms_error();
+        e_rms = system.rms_error();
 
-        if ( (system.rms_error() < 0.001) && ( (cycles < minCycles) || (minCycles == 0) ) ) {
-            minCycles = cycles;
+        if ( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+            min_cycles = cycles;
         }
     }
 
-    std::cout << "Minimum Cycles over 100 runs = " << minCycles << '\n' << std::endl;
-//    std::cout << "RMS Error = " << system.rms_error() << '\n' << std::endl;
+    std::cout << "RMS Error of final run = " << e_rms << '\n';
+    std::cout << "Minimum Cycles over " << n_runs << " runs = " << min_cycles << '\n';
+
+    t_total.stop();
+    double timing = t_total.get_timing();
+//    std::cout << "Total program execution time = " << timing << " seconds\n" << std::endl;
+  
+    unsigned hours = 0, minutes = 0;
+    if ( timing >= 3600 ) {
+        hours = static_cast<unsigned>(floor(timing/3600));
+        timing -= hours*3600;
+    }
+    if ( timing >= 60 ) {
+        minutes = static_cast<unsigned>(floor(timing/60));
+        timing -= minutes*60;
+    }
+    std::cout << "Total program execution time = " << hours << "h : " << minutes
+              << "m : " << timing << "s\n" << std::endl;
+    
 
     return 0;
 }
