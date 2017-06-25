@@ -12,5 +12,6 @@
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 srun ./ADI_AVX_original.exe 1 82 0.000001
-srun ./ADI_AVX_simple.exe 1 82 0.000001
-srun ./ADI_AVX_complex.exe 1 82 0.000001
+srun ./ADI_AVX_transposed.exe 1 82 0.000001
+srun ./ADI_scalar_original.exe 1 82 0.000001
+srun ./ADI_scalar_transposed.exe 1 82 0.000001

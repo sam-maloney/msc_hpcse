@@ -119,22 +119,25 @@ public:
         }
 
         /// Complete any remaining rows
-        for(; i < N_-1; ++i) {
+        for(; j < N_-1; ++j) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
-                    c1*rho_[(i+1)*N_ + 1];
-            for(size_type k = 2; k < N_-1; k++) {
-                d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
-                          rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
+            d_[1] = c1*(rho_[N_ + j - 1] + f1_*rho_[N_ + j]) +
+                    c1* rho_[N_ + j + 1];
+            for(size_type k = 2; k < N_-2; k++) {
+                d_[k] = ( rho_[k*N_ + j - 1] + f1_*rho_[k*N_ + j] +
+                          rho_[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[i*N_ + N_ - 2] = d_[N_ - 2];
+            rho_half[j*N_ + N_ - 2] = (    rho_[(N_-2)*N_ + j - 1] +
+                                       f1_*rho_[(N_-2)*N_ + j]     +
+                                           rho_[(N_-2)*N_ + j + 1] +
+                                           d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
+                rho_half[j*N_ + k] = d_[k] - c_[k]*rho_half[j*N_ + k + 1];
             }
         }
 
-        
+
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 4 for data reuse and AVX
         size_type j;
@@ -191,14 +194,17 @@ public:
             /// First is the forward sweep in y direction
             d_[1] = c1*(rho_half[N_ + j - 1] + f1_*rho_half[N_ + j]) +
                     c1*rho_half[N_ + j + 1];
-            for(size_type k = 2; k < N_-1; k++) {
+            for(size_type k = 2; k < N_-2; k++) {
                 d_[k] = ( rho_half[k*N_ + j - 1] + f1_*rho_half[k*N_ + j] +
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[(N_ - 2)*N_ + j] = d_[N_ - 2];
+            rho_[j*N_ + N_ - 2] = (    rho_half[(N_-2)*N_ + j - 1] +
+                                   f1_*rho_half[(N_-2)*N_ + j]     +
+                                       rho_half[(N_-2)*N_ + j + 1] +
+                                       d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
+                rho_[j*N_ + k] = d_[k] - c_[k]*rho_[j*N_ + k + 1];
             }
         }
 
@@ -326,7 +332,7 @@ int main(int argc, char* argv[])
 {
     timer t_total;
     t_total.start();
- 
+
     if (argc < 4) {
         std::cerr << "Usage: " << argv[0] << " D N dt (t_max)" << std::endl;
         return 1;
@@ -344,12 +350,12 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX Simulations" << '\n';
+    std::cout << "Running AVX_original Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 1;
+    size_type n_runs = 100;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
@@ -392,7 +398,7 @@ int main(int argc, char* argv[])
     t_total.stop();
     double timing = t_total.get_timing();
 //    std::cout << "Total program execution time = " << timing << " seconds\n" << std::endl;
-  
+
     unsigned hours = 0, minutes = 0;
     if ( timing >= 3600 ) {
         hours = static_cast<unsigned>(floor(timing/3600));
@@ -404,7 +410,7 @@ int main(int argc, char* argv[])
     }
     std::cout << "Total program execution time = " << hours << "h : " << minutes
               << "m : " << timing << "s\n" << std::endl;
-    
+
 
     return 0;
 }
