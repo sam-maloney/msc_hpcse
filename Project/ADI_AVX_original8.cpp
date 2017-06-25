@@ -171,10 +171,10 @@ public:
             d_pr1_v = _mm256_mul_pd (tmp5_v, c_rcp_v);
 
             _mm256_storeu_pd(d_.data() + 8 , tmp2_v);
-            _mm256_storeu_pd(d_.data() + 12, tmp2_v);
+            _mm256_storeu_pd(d_.data() + 12, tmp5_v);
 
             for(size_type k = 2; k < N_-2; k += 1) {
-                __m256d rho_half0_lv, rho_half0_lv, rho_half0_rv;
+                __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
                 __m256d rho_half1_lv, rho_half1_cv, rho_half1_rv;
                 __m256d tmp0_v , tmp1_v , tmp2_v, tmp3_v, tmp4_v, tmp5_v;
 
@@ -396,7 +396,7 @@ int main(int argc, char* argv[])
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 1;
+    size_type n_runs = 100;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
