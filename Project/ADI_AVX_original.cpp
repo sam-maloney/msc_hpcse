@@ -119,21 +119,21 @@ public:
         }
 
         /// Complete any remaining rows
-        for(; j < N_-1; ++j) {
+        for(; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[N_ + j - 1] + f1_*rho_[N_ + j]) +
-                    c1* rho_[N_ + j + 1];
+            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
+                    c1*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-2; k++) {
-                d_[k] = ( rho_[k*N_ + j - 1] + f1_*rho_[k*N_ + j] +
-                          rho_[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
+                d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
+                          rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[j*N_ + N_ - 2] = (    rho_[(N_-2)*N_ + j - 1] +
-                                       f1_*rho_[(N_-2)*N_ + j]     +
-                                           rho_[(N_-2)*N_ + j + 1] +
+            rho_half[i*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
+                                       f1_*rho_[(i+1)*N_ - 2] +
+                                           rho_[(i+2)*N_ - 2] +
                                            d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[j*N_ + k] = d_[k] - c_[k]*rho_half[j*N_ + k + 1];
+                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
         }
 
@@ -199,12 +199,12 @@ public:
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[j*N_ + N_ - 2] = (    rho_half[(N_-2)*N_ + j - 1] +
-                                   f1_*rho_half[(N_-2)*N_ + j]     +
-                                       rho_half[(N_-2)*N_ + j + 1] +
-                                       d_[N_-3] ) * c_rcp_[N_-2];
+            rho_[(N_ - 2)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
+                                     f1_*rho_half[(N_-2)*N_ + j]     +
+                                         rho_half[(N_-2)*N_ + j + 1] +
+                                         d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[j*N_ + k] = d_[k] - c_[k]*rho_[j*N_ + k + 1];
+                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         }
 
@@ -355,7 +355,7 @@ int main(int argc, char* argv[])
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 100;
+    size_type n_runs = 1;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
