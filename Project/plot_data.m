@@ -5,8 +5,10 @@ clear;
 % file_name = 'ADI_000.dat';
 % file_name = 'ADI_serial.dat';
 % file_name = 'ADI_scalar.dat';
-file_name = 'ADI_AVX.dat';
+% file_name = 'ADI_AVX.dat';
 % file_name = 'ADI_ref.dat';
+file_name = 'ADI_orig8.dat';
+
 
 % file_name = 'RW_000.dat';
 % file_name = 'RW_serial.dat';

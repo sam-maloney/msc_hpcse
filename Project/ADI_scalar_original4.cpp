@@ -2,7 +2,6 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
-#include <x86intrin.h>
 
 /// Select which runtime measure to use
 //#define USE_TIMER
@@ -52,161 +51,148 @@ public:
         /// Dirichlet boundaries; central differences in space
 
         value_type c1 = -c_[1];
-        __m256d f1_v = _mm256_set1_pd( f1_  );
-        __m256d c1_v = _mm256_set1_pd(-c_[1]);
+        size_type i;
 
         /// For each row, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 4 for data reuse and AVX
-        size_type j;
-        for(j = 1; j < N_-4; j += 4) {
-            /// First is the forward sweep in y direction
-            __m256d rho_lv0 = _mm256_loadu_pd(rho_.data() + N_ + j - 1);
-            __m256d rho_cv0 = _mm256_loadu_pd(rho_.data() + N_ + j    );
-            __m256d rho_rv0 = _mm256_loadu_pd(rho_.data() + N_ + j + 1);
+        /// Loop unrolled by 4 for scalar replacement and preparation for AVX
+        for(i = 1; i < N_-4; i += 4) {
+            /// First is the forward sweep in x direction
 
-            __m256d tmp0_v = _mm256_fmadd_pd(f1_v, rho_cv0, rho_lv0);
-            __m256d tmp1_v = _mm256_mul_pd  (c1_v, rho_rv0);
-            __m256d tmp2_v = _mm256_fmadd_pd(c1_v, tmp0_v      , tmp1_v);
-            __m256d c_rcp_v0 = _mm256_set1_pd (c_rcp_[2]);
-            __m256d d_prv_v0 = _mm256_mul_pd  (tmp2_v, c_rcp_v0);
+            value_type tmp0 = rho_[    i*N_ + 1];
+            value_type tmp1 = rho_[(i+1)*N_ + 1];
+            value_type tmp2 = rho_[(i+2)*N_ + 1];
+            value_type tmp3 = rho_[(i+3)*N_ + 1];
 
-            _mm256_storeu_pd(d_.data() + 4, tmp2_v);
+            d_[4] = c1*(rho_[(i-1)*N_ + 1] + f1_*tmp0) + c1*tmp1;
+            d_[5] = c1*(tmp0               + f1_*tmp1) + c1*tmp2;
+            d_[6] = c1*(tmp1               + f1_*tmp2) + c1*tmp3;
+            d_[7] = c1*(tmp2               + f1_*tmp3) + c1*rho_[(i+4)*N_ + 1];
 
-            for(size_type k = 2; k < N_-2; k += 1) {
-              __m256d rho_lv0 = _mm256_loadu_pd(rho_.data() + k*N_ + j - 1);
-              __m256d rho_cv0 = _mm256_loadu_pd(rho_.data() + k*N_ + j    );
-              __m256d rho_rv0 = _mm256_loadu_pd(rho_.data() + k*N_ + j + 1);
+            for(size_type k = 2; k < N_-2; k++) {
 
-              __m256d tmp0_v = _mm256_fmadd_pd(f1_v    , rho_cv0, rho_lv0);
-              __m256d tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_rv0, d_prv_v0    );
-              __m256d tmp2_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v, tmp1_v);
+                value_type tmp0 = rho_[    i*N_ + k];
+                value_type tmp1 = rho_[(i+1)*N_ + k];
+                value_type tmp2 = rho_[(i+2)*N_ + k];
+                value_type tmp3 = rho_[(i+3)*N_ + k];
+                value_type tmpf = c_rcp_[k];
 
-              c_rcp_v0 = _mm256_set1_pd(c_rcp_[k+1]);
-              d_prv_v0 = _mm256_mul_pd (tmp2_v, c_rcp_v0);
-              _mm256_storeu_pd(d_.data() + 4*k, tmp2_v);
+                d_[k*4]     = ( rho_[(i-1)*N_ + k] + f1_*tmp0 + tmp1 +
+                                d_[(k-1)*4] ) * tmpf;
+                d_[k*4 + 1] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                d_[(k-1)*4 + 1] ) * tmpf;
+                d_[k*4 + 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                d_[(k-1)*4 + 2] ) * tmpf;
+                d_[k*4 + 3] = ( tmp2 + f1_*tmp3 + rho_[(i+4)*N_ + k] +
+                                d_[(k-1)*4 + 3] ) * tmpf;
             }
 
             /// Second is the back substitution for the half time step
-            rho_lv0 = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j - 1);
-            rho_cv0 = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j    );
-            rho_rv0 = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j + 1);
-            tmp0_v = _mm256_fmadd_pd(f1_v    , rho_cv0, rho_lv0);
-            tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_rv0, d_prv_v0);
-            __m256d rho_half_pr_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v, tmp1_v);
+            tmp0 = rho_[(i+1)*N_ - 2];
+            tmp1 = rho_[(i+2)*N_ - 2];
+            tmp2 = rho_[(i+3)*N_ - 2];
+            tmp3 = rho_[(i+4)*N_ - 2];
+            value_type tmpf = c_rcp_[N_-2];
 
-            __m128d tmp3_v, tmp4_v;
-
-            tmp3_v = _mm256_extractf128_pd(rho_half_pr_v, 0);
-            tmp4_v = _mm256_extractf128_pd(rho_half_pr_v, 1);
-
-            _mm_store_sd (rho_half.data() + (j+1)*N_ - 2, tmp3_v);
-            _mm_storeh_pd(rho_half.data() + (j+2)*N_ - 2, tmp3_v);
-            _mm_store_sd (rho_half.data() + (j+3)*N_ - 2, tmp4_v);
-            _mm_storeh_pd(rho_half.data() + (j+4)*N_ - 2, tmp4_v);
+            rho_half[(i+1)*N_ - 2] = ( rho_[i*N_ - 2]  + f1_*tmp0 + tmp1 +
+                                       d_[4*N_ - 12] ) * tmpf;
+            rho_half[(i+2)*N_ - 2] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                       d_[4*N_ - 11] ) * tmpf;
+            rho_half[(i+3)*N_ - 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                       d_[4*N_ - 10] ) * tmpf;
+            rho_half[(i+4)*N_ - 2] = ( tmp2 + f1_*tmp3 + rho_[(i+5)*N_ - 2] +
+                                       d_[4*N_ - 9] )  * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
-                __m256d c_v, d_v;
 
-                c_v = _mm256_set1_pd(-c_[k]);
-                d_v = _mm256_loadu_pd(d_.data() + k*4);
-                rho_half_pr_v = _mm256_fmadd_pd(c_v, rho_half_pr_v, d_v);
+                value_type tmpc = c_[k];
 
-                __m128d tmp1_v, tmp2_v;
-
-                tmp1_v = _mm256_extractf128_pd(rho_half_pr_v, 0);
-                tmp2_v = _mm256_extractf128_pd(rho_half_pr_v, 1);
-
-                _mm_store_sd (rho_half.data() + (j  )*N_ + k, tmp1_v);
-                _mm_storeh_pd(rho_half.data() + (j+1)*N_ + k, tmp1_v);
-                _mm_store_sd (rho_half.data() + (j+2)*N_ + k, tmp2_v);
-                _mm_storeh_pd(rho_half.data() + (j+3)*N_ + k, tmp2_v);
+                rho_half[    i*N_ + k] = d_[k*4] - tmpc*rho_half[i*N_ + k + 1];
+                rho_half[(i+1)*N_ + k] = d_[k*4 + 1] -
+                                         tmpc*rho_half[(i+1)*N_ + k + 1];
+                rho_half[(i+2)*N_ + k] = d_[k*4 + 2] -
+                                         tmpc*rho_half[(i+2)*N_ + k + 1];
+                rho_half[(i+3)*N_ + k] = d_[k*4 + 3] -
+                                         tmpc*rho_half[(i+3)*N_ + k + 1];
             }
         }
 
         /// Complete any remaining rows
-        for(; j < N_-1; ++j) {
+        for(; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[N_ + j - 1] + f1_*rho_[N_ + j]) +
-                    c1* rho_[N_ + j + 1];
+            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
+                    c1*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-2; k++) {
-                d_[k] = ( rho_[k*N_ + j - 1] + f1_*rho_[k*N_ + j] +
-                          rho_[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
+                d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
+                          rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[j*N_ + N_ - 2] = (    rho_[(N_-2)*N_ + j - 1] +
-                                       f1_*rho_[(N_-2)*N_ + j]     +
-                                           rho_[(N_-2)*N_ + j + 1] +
+            rho_half[i*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
+                                       f1_*rho_[(i+1)*N_ - 2] +
+                                           rho_[(i+2)*N_ - 2] +
                                            d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[j*N_ + k] = d_[k] - c_[k]*rho_half[j*N_ + k + 1];
+                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
         }
 
+        size_type j;
 
         /// For each column, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 4 for data reuse and AVX
+        /// Loop unrolled by 4 for scalar replacement and preparation for AVX
         for(j = 1; j < N_-4; j += 4) {
             /// First is the forward sweep in y direction
-            __m256d rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + N_ + j - 1);
-            __m256d rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + N_ + j    );
-            __m256d rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + N_ + j + 1);
 
-            __m256d tmp0_v = _mm256_fmadd_pd(f1_v, rho_half_cv0, rho_half_lv0);
-            __m256d tmp1_v = _mm256_mul_pd  (c1_v, rho_half_rv0);
-            __m256d tmp2_v = _mm256_fmadd_pd(c1_v, tmp0_v      , tmp1_v);
-            __m256d c_rcp_v0 = _mm256_set1_pd (c_rcp_[2]);
-            __m256d d_prv_v0 = _mm256_mul_pd  (tmp2_v, c_rcp_v0);
+            value_type tmp0 = rho_half[N_ + j];
+            value_type tmp1 = rho_half[N_ + j + 1];
+            value_type tmp2 = rho_half[N_ + j + 2];
+            value_type tmp3 = rho_half[N_ + j + 3];
 
-            _mm256_storeu_pd(d_.data() + 4, tmp2_v);
+            d_[4] = c1*(rho_half[N_ + j - 1] + f1_*tmp0) + c1*tmp1;
+            d_[5] = c1*(tmp0                 + f1_*tmp1) + c1*tmp2;
+            d_[6] = c1*(tmp1                 + f1_*tmp2) + c1*tmp3;
+            d_[7] = c1*(tmp2                 + f1_*tmp3) + c1*rho_half[N_ + j + 4];
 
-            for(size_type k = 2; k < N_-2; k += 1) {
-              __m256d rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j - 1);
-              __m256d rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j    );
-              __m256d rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + k*N_ + j + 1);
+            for(size_type k = 2; k < N_-2; k++) {
 
-              __m256d tmp0_v = _mm256_fmadd_pd(f1_v    , rho_half_cv0, rho_half_lv0);
-              __m256d tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_half_rv0, d_prv_v0    );
-              __m256d tmp2_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v, tmp1_v);
+                value_type tmp0 = rho_half[k*N_ + j];
+                value_type tmp1 = rho_half[k*N_ + j + 1];
+                value_type tmp2 = rho_half[k*N_ + j + 2];
+                value_type tmp3 = rho_half[k*N_ + j + 3];
+                value_type tmpf = c_rcp_[k];
 
-              c_rcp_v0 = _mm256_set1_pd(c_rcp_[k+1]);
-              d_prv_v0 = _mm256_mul_pd (tmp2_v, c_rcp_v0);
-              _mm256_storeu_pd(d_.data() + 4*k, tmp2_v);
+                d_[k*4] =     ( rho_half[k*N_ + j - 1] + f1_*tmp0 + tmp1 +
+                                d_[(k-1)*4] ) * tmpf;
+                d_[k*4 + 1] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                d_[(k-1)*4 + 1] ) * tmpf;
+                d_[k*4 + 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                d_[(k-1)*4 + 2] ) * tmpf;
+                d_[k*4 + 3] = ( tmp2 + f1_*tmp3 + rho_half[k*N_ + j + 4] +
+                                d_[(k-1)*4 + 3] ) * tmpf;
             }
-
             /// Second is the back substitution for the full time step
-            rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j - 1);
-            rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j    );
-            rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j + 1);
-            tmp0_v = _mm256_fmadd_pd(f1_v    , rho_half_cv0, rho_half_lv0);
-            tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_half_rv0, d_prv_v0    );
-            __m256d rho_pr_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v, tmp1_v);
+            tmp0 = rho_half[(N_-2)*N_ + j];
+            tmp1 = rho_half[(N_-2)*N_ + j + 1];
+            tmp2 = rho_half[(N_-2)*N_ + j + 2];
+            tmp3 = rho_half[(N_-2)*N_ + j + 3];
+            value_type tmpf = c_rcp_[N_-2];
 
-            __m128d tmp3_v, tmp4_v;
-
-            tmp3_v = _mm256_extractf128_pd(rho_pr_v, 0);
-            tmp4_v = _mm256_extractf128_pd(rho_pr_v, 1);
-
-            _mm_store_sd (rho_.data() + (j+1)*N_ - 2, tmp3_v);
-            _mm_storeh_pd(rho_.data() + (j+2)*N_ - 2, tmp3_v);
-            _mm_store_sd (rho_.data() + (j+3)*N_ - 2, tmp4_v);
-            _mm_storeh_pd(rho_.data() + (j+4)*N_ - 2, tmp4_v);
+            rho_[(N_-2)*N_ + j]     = ( rho_half[(N_-2)*N_ + j - 1] + f1_*tmp0 +
+                                        tmp1 + d_[4*N_ - 12] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 1] = ( tmp0 + f1_*tmp1 +
+                                        tmp2 + d_[4*N_ - 11] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 2] = ( tmp1  + f1_*tmp2 +
+                                        tmp3 + d_[4*N_ - 10] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 3] = ( tmp2  + f1_*tmp3 +
+                                        rho_half[(N_-2)*N_ + j + 4] + d_[4*N_ - 9] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
-                __m256d c_v, d_v, tmp0_v;
 
-                c_v    = _mm256_set1_pd (-c_[k]);
-                d_v    = _mm256_loadu_pd(d_.data() + k*4);
-                rho_pr_v = _mm256_fmadd_pd(c_v, rho_pr_v, d_v);
+                value_type tmpc = c_[k];
 
-                __m128d tmp1_v, tmp2_v;
-
-                tmp1_v = _mm256_extractf128_pd(rho_pr_v, 0);
-                tmp2_v = _mm256_extractf128_pd(rho_pr_v, 1);
-
-                _mm_store_sd (rho_.data() + (j  )*N_ + k, tmp1_v);
-                _mm_storeh_pd(rho_.data() + (j+1)*N_ + k, tmp1_v);
-                _mm_store_sd (rho_.data() + (j+2)*N_ + k, tmp2_v);
-                _mm_storeh_pd(rho_.data() + (j+3)*N_ + k, tmp2_v);
+                rho_[k*N_ + j]     = d_[k*4]     - tmpc*rho_[(k + 1)*N_ + j];
+                rho_[k*N_ + j + 1] = d_[k*4 + 1] - tmpc*rho_[(k + 1)*N_ + j + 1];
+                rho_[k*N_ + j + 2] = d_[k*4 + 2] - tmpc*rho_[(k + 1)*N_ + j + 2];
+                rho_[k*N_ + j + 3] = d_[k*4 + 3] - tmpc*rho_[(k + 1)*N_ + j + 3];
             }
         }
 
@@ -220,12 +206,12 @@ public:
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[j*N_ + N_ - 2] = (    rho_half[(N_-2)*N_ + j - 1] +
-                                   f1_*rho_half[(N_-2)*N_ + j]     +
-                                       rho_half[(N_-2)*N_ + j + 1] +
-                                       d_[N_-3] ) * c_rcp_[N_-2];
+            rho_[(N_ - 2)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
+                                     f1_*rho_half[(N_-2)*N_ + j]     +
+                                         rho_half[(N_-2)*N_ + j + 1] +
+                                         d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[j*N_ + k] = d_[k] - c_[k]*rho_[j*N_ + k + 1];
+                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         }
 
@@ -344,8 +330,11 @@ private:
         }
     }
 
+    value_type D_;
     size_type N_, Ntot, n_step_;
-    value_type D_, dh_, dt_, fac_, f1_, f2_, rms_error_;
+
+    value_type dh_, dt_, fac_, f1_, f2_, rms_error_;
+
     std::vector<value_type> rho_, rho_half, c_, d_, c_rcp_;
 };
 
@@ -371,7 +360,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX_transposed Simulations" << '\n';
+    std::cout << "Running Scalar_original_4 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;

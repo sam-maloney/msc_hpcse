@@ -41,6 +41,10 @@ public:
         rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
 
+        c_.resize(N_, 0.0);
+        c_rcp_.resize(N_, 0.0);
+        d_.resize(4*N_, 0.0);
+
         n_step_ = 0;
 
         initialize_density();
@@ -170,22 +174,24 @@ public:
             }
 
             /// Second is the back substitution for the full time step
+            __m256d rho_pr_v;
+
             rho_half_lv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j - 1);
             rho_half_cv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j    );
             rho_half_rv0 = _mm256_loadu_pd(rho_half.data() + (N_-2)*N_ + j + 1);
-            tmp0_v = _mm256_fmadd_pd(f1_v    , rho_half_cv0, rho_half_lv0);
-            tmp1_v = _mm256_fmadd_pd(c_rcp_v0, rho_half_rv0, d_prv_v0    );
-            tmp2_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v      , tmp1_v      );
 
-            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j, tmp2_v);
+            tmp0_v   = _mm256_fmadd_pd(f1_v    , rho_half_cv0, rho_half_lv0);
+            tmp1_v   = _mm256_fmadd_pd(c_rcp_v0, rho_half_rv0, d_prv_v0    );
+            rho_pr_v = _mm256_fmadd_pd(c_rcp_v0, tmp0_v      , tmp1_v      );
+
+            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j, rho_pr_v);
 
             for(size_type k = N_-3; k > 0; k--) {
                 __m256d c_v = _mm256_set1_pd(-c_[k]);
                 __m256d d_v = _mm256_loadu_pd(d_.data() + k*4);
-                __m256d rho_pr_v = _mm256_loadu_pd(rho_.data() + (k + 1)*N_ + j);
 
-                __m256d tmp_v = _mm256_fmadd_pd(c_v, rho_pr_v, d_v);
-                _mm256_storeu_pd(rho_.data() + k*N_ + j, tmp_v);
+                rho_pr_v = _mm256_fmadd_pd(c_v, rho_pr_v, d_v);
+                _mm256_storeu_pd(rho_.data() + k*N_ + j, rho_pr_v);
             }
         }
 
@@ -312,10 +318,6 @@ private:
 
     void initialize_thomas()
     {
-        c_.resize(N_, 0.0);
-        c_rcp_.resize(N_, 0.0);
-        d_.resize(4*N_, 0.0);
-
         c_[1] = -fac_ / f2_;
         for(size_type i = 2; i < N_-1; i++) {
             c_[i] = -fac_ / (f2_ - fac_*c_[i-1]);
@@ -350,7 +352,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX_original Simulations" << '\n';
+    std::cout << "Running AVX_original_4 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
