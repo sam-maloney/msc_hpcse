@@ -137,7 +137,7 @@ public:
                                        d_[8*N_ - 19] ) * tmpf;
             rho_half[(i+7)*N_ - 2] = ( tmp5 + f1_*tmp6 + tmp7 +
                                        d_[8*N_ - 18] ) * tmpf;
-            rho_half[(i+8)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+8)*N_ - 2] +
+            rho_half[(i+8)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+9)*N_ - 2] +
                                        d_[8*N_ - 17] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
