@@ -3,6 +3,7 @@
 #include <vector>
 #include <cmath>
 #include <x86intrin.h>
+#include <omp.h>
 
 /// Select which runtime measure to use
 //#define USE_TIMER
@@ -60,8 +61,12 @@ public:
         __m256d f1_v  = _mm256_set1_pd( f1_  );
         __m256d c1_v  = _mm256_set1_pd(-c_[1]);
 
+        #pragma omp parallel private(d_)
+        {
+
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and preparation for AVX
+        #pragma omp for nowait
         for(size_type i = 1; i < N_-8; i += 8) {
             /// First is the forward sweep in x direction
             value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
@@ -163,8 +168,10 @@ public:
                 rho_half[(i+7)*N_ + k] = d_[k*8 + 7] -
                                          tmpc*rho_half[(i+7)*N_ + k + 1];
             }
-        }
+        } // main row loop
 
+        #pragma omp single
+        {
         /// Complete any remaining rows
         for(size_type i = remainder_index_ ; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
@@ -182,10 +189,12 @@ public:
             for(size_type k = N_-3; k > 0; k--) {
                 rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
-        }
+        } // remaining row loop
+        } // OMP single region
 
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
+        #pragma omp for nowait
         for(size_type j = 1; j < N_-8; j += 8) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
@@ -273,8 +282,10 @@ public:
                 _mm256_storeu_pd(rho_.data() + k*N_ + j    , rho_pr0_v);
                 _mm256_storeu_pd(rho_.data() + k*N_ + j + 4, rho_pr1_v);
             }
-        }
+        } // main column loop
 
+        #pragma omp single
+        {
         /// Complete any remaining columns
         for(size_type j = remainder_index_ ; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
@@ -292,7 +303,10 @@ public:
             for(size_type k = N_-3; k > 0; k--) {
                 rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
-        }
+        } // remaining column loop
+        } // OMP single region
+
+        } // OMP parallel region
 
         n_step_++;
     }
@@ -416,7 +430,7 @@ int main(int argc, char* argv[])
     t_total.start();
 
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " D N dt (t_max)" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " D N dt (n_steps)" << std::endl;
         return 1;
     }
 
@@ -427,12 +441,12 @@ int main(int argc, char* argv[])
     value_type t_max ;
 
     if (argc > 4) {
-        t_max = std::stoul(argv[5]);
+        t_max = std::stoul(argv[5]) * dt;
     } else {
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX_OMP Simulations" << '\n';
+    std::cout << "Running AVX_OMP_untransposed Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;

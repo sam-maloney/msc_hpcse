@@ -1,37 +1,28 @@
 ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
-Running AVX_original_8 Simulations
-N = 98	dt = 5e-07
-RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 13272775808
-Total program execution time = 0h : 8m : 31.9412s
-
-Running Scalar_original_8 Simulations
-N = 98	dt = 5e-07
-RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 15126099866
-Total program execution time = 0h : 9m : 47.963s
-
-Running Scalar_transposed_8 Simulations
-N = 98	dt = 5e-07
-RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 15131341180
-Total program execution time = 0h : 9m : 42.416s
-
+slurmstepd: error: execve(): /scratch/snx3000/stud09/Project/./ADI_AVX_original8.exe: No such file or directory
+srun: error: nid02021: task 0: Exited with exit code 2
+srun: Terminating job step 2121353.0
+slurmstepd: error: execve(): /scratch/snx3000/stud09/Project/./ADI_scalar_original8.exe: No such file or directory
+srun: error: nid02021: task 0: Exited with exit code 2
+srun: Terminating job step 2121353.1
+slurmstepd: error: execve(): /scratch/snx3000/stud09/Project/./ADI_scalar_transposed8.exe: No such file or directory
+srun: error: nid02021: task 0: Exited with exit code 2
+srun: Terminating job step 2121353.2
 Running AVX_original_12 Simulations
 N = 98	dt = 5e-07
 RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 18768636030
-Total program execution time = 0h : 12m : 13.9163s
+Minimum Cycles over 100 runs = 18764138247
+Total program execution time = 0h : 12m : 9.11499s
 
 Running Scalar_original_12 Simulations
 N = 98	dt = 5e-07
 RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 16010790124
-Total program execution time = 0h : 10m : 19.6401s
+Minimum Cycles over 100 runs = 15902014282
+Total program execution time = 0h : 10m : 16.3002s
 
 Running Scalar_transposed_12 Simulations
 N = 98	dt = 5e-07
 RMS Error of final run = 0.000693332
-Minimum Cycles over 100 runs = 15531857566
-Total program execution time = 0h : 10m : 0.832063s
+Minimum Cycles over 100 runs = 15543807708
+Total program execution time = 0h : 9m : 59.2317s
 
