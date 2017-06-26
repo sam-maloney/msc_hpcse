@@ -371,12 +371,12 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX_transposed Simulations" << '\n';
+    std::cout << "Running AVX_transposed4 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 100;
+    size_type n_runs = 1;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);

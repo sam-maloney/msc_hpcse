@@ -230,7 +230,7 @@ public:
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
         size_type j;
-        for(j = 1; j < N_-8; j += 8) {
+        for(j = 1; j < N_-12; j += 12) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
             __m256d rho_half1_lv, rho_half1_cv, rho_half1_rv;
@@ -298,7 +298,7 @@ public:
                 c_rcp_v = _mm256_set1_pd(c_rcp_[k+1]);
                 d_pr0_v = _mm256_mul_pd (tmp2_v, c_rcp_v);
                 d_pr1_v = _mm256_mul_pd (tmp5_v, c_rcp_v);
-                d_pr1_v = _mm256_mul_pd (tmp8_v, c_rcp_v);
+                d_pr2_v = _mm256_mul_pd (tmp8_v, c_rcp_v);
                 _mm256_storeu_pd(d_.data() + 12*k    , tmp2_v);
                 _mm256_storeu_pd(d_.data() + 12*k + 4, tmp5_v);
                 _mm256_storeu_pd(d_.data() + 12*k + 8, tmp8_v);
@@ -338,7 +338,7 @@ public:
                 c_v  = _mm256_set1_pd(-c_[k]);
                 d0_v = _mm256_loadu_pd(d_.data() + k*12);
                 d1_v = _mm256_loadu_pd(d_.data() + k*12 + 4);
-                d1_v = _mm256_loadu_pd(d_.data() + k*12 + 8);
+                d2_v = _mm256_loadu_pd(d_.data() + k*12 + 8);
 
                 rho_pr0_v = _mm256_fmadd_pd(c_v, rho_pr0_v, d0_v);
                 rho_pr1_v = _mm256_fmadd_pd(c_v, rho_pr1_v, d1_v);
@@ -511,7 +511,7 @@ int main(int argc, char* argv[])
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 1;
+    size_type n_runs = 100;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);

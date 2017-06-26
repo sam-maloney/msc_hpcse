@@ -1,0 +1,19 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+Running AVX_original_12 Simulations
+N = 74	dt = 1e-06
+RMS Error of final run = 0.000489812
+Minimum Cycles over 100 runs = 5366755426
+Total program execution time = 0h : 3m : 26.5239s
+
+Running Scalar_original_12 Simulations
+N = 74	dt = 1e-06
+RMS Error of final run = 0.000489812
+Minimum Cycles over 100 runs = 4426938732
+Total program execution time = 0h : 2m : 50.4708s
+
+Running Scalar_transposed_12 Simulations
+N = 74	dt = 1e-06
+RMS Error of final run = 0.000489812
+Minimum Cycles over 100 runs = 4325358440
+Total program execution time = 0h : 2m : 46.446s
+
