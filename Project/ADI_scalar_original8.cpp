@@ -444,7 +444,7 @@ int main(int argc, char* argv[])
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 100;
+    size_type n_runs = 1000;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);

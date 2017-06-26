@@ -42,7 +42,7 @@ public:
 
         c_.resize(N_, 0.0);
         c_rcp_.resize(N_, 0.0);
-        d_.resize(12*N_, 0.0);
+        d_.resize(8*N_, 0.0);
 
         n_step_ = 0;
 
@@ -55,294 +55,227 @@ public:
         /// Dirichlet boundaries; central differences in space
 
         value_type c1 = -c_[1];
-        size_type j;
+        size_type i;
 
         /// For each row, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 12 for data reuse and scalar replacement
-        for(j = 1; j < N_-12; j += 12) {
+        /// Loop unrolled by 8 for data reuse and preparation for AVX
+        for(i = 1; i < N_-8; i += 8) {
             /// First is the forward sweep in x direction
-            value_type tmp0, tmp1, tmp2 , tmp3 , tmp4, tmp5, tmp6, tmp7;
-            value_type tmp8, tmp9, tmp10, tmp11, tmpf;
+            value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
 
-            tmp0  = rho_[N_ + j     ];
-            tmp1  = rho_[N_ + j + 1 ];
-            tmp2  = rho_[N_ + j + 2 ];
-            tmp3  = rho_[N_ + j + 3 ];
-            tmp4  = rho_[N_ + j + 4 ];
-            tmp5  = rho_[N_ + j + 5 ];
-            tmp6  = rho_[N_ + j + 6 ];
-            tmp7  = rho_[N_ + j + 7 ];
-            tmp8  = rho_[N_ + j + 8 ];
-            tmp9  = rho_[N_ + j + 9 ];
-            tmp10 = rho_[N_ + j + 10];
-            tmp11 = rho_[N_ + j + 11];
+            tmp0 = rho_[(i  )*N_ + 1];
+            tmp1 = rho_[(i+1)*N_ + 1];
+            tmp2 = rho_[(i+2)*N_ + 1];
+            tmp3 = rho_[(i+3)*N_ + 1];
+            tmp4 = rho_[(i+4)*N_ + 1];
+            tmp5 = rho_[(i+5)*N_ + 1];
+            tmp6 = rho_[(i+6)*N_ + 1];
+            tmp7 = rho_[(i+7)*N_ + 1];
 
-            d_[12] = c1*(rho_[N_ + j - 1] + f1_*tmp0 ) + c1*tmp1;
-            d_[13] = c1*(tmp0             + f1_*tmp1 ) + c1*tmp2;
-            d_[14] = c1*(tmp1             + f1_*tmp2 ) + c1*tmp3;
-            d_[15] = c1*(tmp2             + f1_*tmp3 ) + c1*tmp4;
-            d_[16] = c1*(tmp3             + f1_*tmp4 ) + c1*tmp5;
-            d_[17] = c1*(tmp4             + f1_*tmp5 ) + c1*tmp6;
-            d_[18] = c1*(tmp5             + f1_*tmp6 ) + c1*tmp7;
-            d_[19] = c1*(tmp6             + f1_*tmp7 ) + c1*tmp8;
-            d_[20] = c1*(tmp7             + f1_*tmp8 ) + c1*tmp9;
-            d_[21] = c1*(tmp8             + f1_*tmp9 ) + c1*tmp10;
-            d_[22] = c1*(tmp9             + f1_*tmp10) + c1*tmp11;
-            d_[23] = c1*(tmp10            + f1_*tmp11) + c1*rho_[N_ + j + 12];
+            d_[8 ] = c1*(rho_[(i-1)*N_ + 1] + f1_*tmp0) + c1*tmp1;
+            d_[9 ] = c1*(tmp0               + f1_*tmp1) + c1*tmp2;
+            d_[10] = c1*(tmp1               + f1_*tmp2) + c1*tmp3;
+            d_[11] = c1*(tmp2               + f1_*tmp3) + c1*tmp4;
+            d_[12] = c1*(tmp3               + f1_*tmp4) + c1*tmp5;
+            d_[13] = c1*(tmp4               + f1_*tmp5) + c1*tmp6;
+            d_[14] = c1*(tmp5               + f1_*tmp6) + c1*tmp7;
+            d_[15] = c1*(tmp6               + f1_*tmp7) + c1*rho_[(i+8)*N_ + 1];
 
             for(size_type k = 2; k < N_-2; k++) {
-                value_type tmp0, tmp1, tmp2 , tmp3 , tmp4, tmp5, tmp6, tmp7;
-                value_type tmp8, tmp9, tmp10, tmp11, tmpf;
+                value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
 
-                tmp0  = rho_[k*N_ + j     ];
-                tmp1  = rho_[k*N_ + j + 1 ];
-                tmp2  = rho_[k*N_ + j + 2 ];
-                tmp3  = rho_[k*N_ + j + 3 ];
-                tmp4  = rho_[k*N_ + j + 4 ];
-                tmp5  = rho_[k*N_ + j + 5 ];
-                tmp6  = rho_[k*N_ + j + 6 ];
-                tmp7  = rho_[k*N_ + j + 7 ];
-                tmp8  = rho_[k*N_ + j + 8 ];
-                tmp9  = rho_[k*N_ + j + 9 ];
-                tmp10 = rho_[k*N_ + j + 10];
-                tmp11 = rho_[k*N_ + j + 11];
+                tmp0 = rho_[(i  )*N_ + k];
+                tmp1 = rho_[(i+1)*N_ + k];
+                tmp2 = rho_[(i+2)*N_ + k];
+                tmp3 = rho_[(i+3)*N_ + k];
+                tmp4 = rho_[(i+4)*N_ + k];
+                tmp5 = rho_[(i+5)*N_ + k];
+                tmp6 = rho_[(i+6)*N_ + k];
+                tmp7 = rho_[(i+7)*N_ + k];
                 tmpf = c_rcp_[k];
 
-                d_[k*12     ] = ( rho_[k*N_ + j - 1] + f1_*tmp0 + tmp1 +
-                                  d_[(k-1)*12     ] ) * tmpf;
-                d_[k*12 + 1 ] = ( tmp0  + f1_*tmp1  + tmp2  +
-                                  d_[(k-1)*12 + 1 ] ) * tmpf;
-                d_[k*12 + 2 ] = ( tmp1  + f1_*tmp2  + tmp3  +
-                                  d_[(k-1)*12 + 2 ] ) * tmpf;
-                d_[k*12 + 3 ] = ( tmp2  + f1_*tmp3  + tmp4  +
-                                  d_[(k-1)*12 + 3 ] ) * tmpf;
-                d_[k*12 + 4 ] = ( tmp3  + f1_*tmp4  + tmp5  +
-                                  d_[(k-1)*12 + 4 ] ) * tmpf;
-                d_[k*12 + 5 ] = ( tmp4  + f1_*tmp5  + tmp6  +
-                                  d_[(k-1)*12 + 5 ] ) * tmpf;
-                d_[k*12 + 6 ] = ( tmp5  + f1_*tmp6  + tmp7  +
-                                  d_[(k-1)*12 + 6 ] ) * tmpf;
-                d_[k*12 + 7 ] = ( tmp6  + f1_*tmp7  + tmp8  +
-                                  d_[(k-1)*12 + 7 ] ) * tmpf;
-                d_[k*12 + 8 ] = ( tmp7  + f1_*tmp8  + tmp9  +
-                                  d_[(k-1)*12 + 8 ] ) * tmpf;
-                d_[k*12 + 9 ] = ( tmp8  + f1_*tmp9  + tmp10 +
-                                  d_[(k-1)*12 + 9 ] ) * tmpf;
-                d_[k*12 + 10] = ( tmp9  + f1_*tmp10 + tmp11 +
-                                  d_[(k-1)*12 + 10] ) * tmpf;
-                d_[k*12 + 11] = ( tmp10 + f1_*tmp11 + rho_[k*N_ + j + 12] +
-                                  d_[(k-1)*12 + 11] ) * tmpf;
+                d_[k*8    ] = ( rho_[(i-1)*N_ + k] + f1_*tmp0 + tmp1 +
+                                d_[(k-1)*8    ] ) * tmpf;
+                d_[k*8 + 1] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                d_[(k-1)*8 + 1] ) * tmpf;
+                d_[k*8 + 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                d_[(k-1)*8 + 2] ) * tmpf;
+                d_[k*8 + 3] = ( tmp2 + f1_*tmp3 + tmp4 +
+                                d_[(k-1)*8 + 3] ) * tmpf;
+                d_[k*8 + 4] = ( tmp3 + f1_*tmp4 + tmp5 +
+                                d_[(k-1)*8 + 4] ) * tmpf;
+                d_[k*8 + 5] = ( tmp4 + f1_*tmp5 + tmp6 +
+                                d_[(k-1)*8 + 5] ) * tmpf;
+                d_[k*8 + 6] = ( tmp5 + f1_*tmp6 + tmp7 +
+                                d_[(k-1)*8 + 6] ) * tmpf;
+                d_[k*8 + 7] = ( tmp6 + f1_*tmp7 + rho_[(i+8)*N_ + k] +
+                                d_[(k-1)*8 + 7] ) * tmpf;
             }
 
             /// Second is the back substitution for the half time step
-            tmp0  = rho_[(N_-2)*N_ + j     ];
-            tmp1  = rho_[(N_-2)*N_ + j + 1 ];
-            tmp2  = rho_[(N_-2)*N_ + j + 2 ];
-            tmp3  = rho_[(N_-2)*N_ + j + 3 ];
-            tmp4  = rho_[(N_-2)*N_ + j + 4 ];
-            tmp5  = rho_[(N_-2)*N_ + j + 5 ];
-            tmp6  = rho_[(N_-2)*N_ + j + 6 ];
-            tmp7  = rho_[(N_-2)*N_ + j + 7 ];
-            tmp8  = rho_[(N_-2)*N_ + j + 8 ];
-            tmp9  = rho_[(N_-2)*N_ + j + 9 ];
-            tmp10 = rho_[(N_-2)*N_ + j + 10];
-            tmp11 = rho_[(N_-2)*N_ + j + 11];
+            tmp0 = rho_[(i+1)*N_ - 2];
+            tmp1 = rho_[(i+2)*N_ - 2];
+            tmp2 = rho_[(i+3)*N_ - 2];
+            tmp3 = rho_[(i+4)*N_ - 2];
+            tmp4 = rho_[(i+5)*N_ - 2];
+            tmp5 = rho_[(i+6)*N_ - 2];
+            tmp6 = rho_[(i+7)*N_ - 2];
+            tmp7 = rho_[(i+8)*N_ - 2];
             tmpf = c_rcp_[N_-2];
 
-            rho_half[(j+1 )*N_ - 2] = ( rho_[(N_-2)*N_ + j - 1] + f1_*tmp0 +
-                                        tmp1  + d_[12*N_ - 36] ) * tmpf;
-            rho_half[(j+2 )*N_ - 2] = ( tmp0  + f1_*tmp1  +
-                                        tmp2  + d_[12*N_ - 35] ) * tmpf;
-            rho_half[(j+3 )*N_ - 2] = ( tmp1  + f1_*tmp2  +
-                                        tmp3  + d_[12*N_ - 34] ) * tmpf;
-            rho_half[(j+4 )*N_ - 2] = ( tmp2  + f1_*tmp3  +
-                                        tmp4  + d_[12*N_ - 33] ) * tmpf;
-            rho_half[(j+5 )*N_ - 2] = ( tmp3  + f1_*tmp4  +
-                                        tmp5  + d_[12*N_ - 32] ) * tmpf;
-            rho_half[(j+6 )*N_ - 2] = ( tmp4  + f1_*tmp5  +
-                                        tmp6  + d_[12*N_ - 31] ) * tmpf;
-            rho_half[(j+7 )*N_ - 2] = ( tmp5  + f1_*tmp6  +
-                                        tmp7  + d_[12*N_ - 30] ) * tmpf;
-            rho_half[(j+8 )*N_ - 2] = ( tmp6  + f1_*tmp7  +
-                                        tmp8  + d_[12*N_ - 29] ) * tmpf;
-            rho_half[(j+9 )*N_ - 2] = ( tmp7  + f1_*tmp8  +
-                                        tmp9  + d_[12*N_ - 28] ) * tmpf;
-            rho_half[(j+10)*N_ - 2] = ( tmp8  + f1_*tmp9  +
-                                        tmp10 + d_[12*N_ - 27] ) * tmpf;
-            rho_half[(j+11)*N_ - 2] = ( tmp9  + f1_*tmp10 +
-                                        tmp11 + d_[12*N_ - 26] ) * tmpf;
-            rho_half[(j+12)*N_ - 2] = ( tmp10 + f1_*tmp11 +
-                                        rho_[(N_-2)*N_ + j + 12] + d_[12*N_ - 25] ) * tmpf;
+            rho_half[(i+1)*N_ - 2] = ( rho_[i*N_ - 2]  + f1_*tmp0 + tmp1 +
+                                       d_[8*N_ - 24] ) * tmpf;
+            rho_half[(i+2)*N_ - 2] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                       d_[8*N_ - 23] ) * tmpf;
+            rho_half[(i+3)*N_ - 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                       d_[8*N_ - 22] ) * tmpf;
+            rho_half[(i+4)*N_ - 2] = ( tmp2 + f1_*tmp3 + tmp4 +
+                                       d_[8*N_ - 21] ) * tmpf;
+            rho_half[(i+5)*N_ - 2] = ( tmp3 + f1_*tmp4 + tmp5 +
+                                       d_[8*N_ - 20] ) * tmpf;
+            rho_half[(i+6)*N_ - 2] = ( tmp4 + f1_*tmp5 + tmp6 +
+                                       d_[8*N_ - 19] ) * tmpf;
+            rho_half[(i+7)*N_ - 2] = ( tmp5 + f1_*tmp6 + tmp7 +
+                                       d_[8*N_ - 18] ) * tmpf;
+            rho_half[(i+8)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+9)*N_ - 2] +
+                                       d_[8*N_ - 17] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
                 value_type tmpc = c_[k];
 
-                rho_half[(j   )*N_ + k] = d_[k*12     ] - tmpc*rho_half[(j   )*N_ + k + 1];
-                rho_half[(j+1 )*N_ + k] = d_[k*12 + 1 ] - tmpc*rho_half[(j+1 )*N_ + k + 1];
-                rho_half[(j+2 )*N_ + k] = d_[k*12 + 2 ] - tmpc*rho_half[(j+2 )*N_ + k + 1];
-                rho_half[(j+3 )*N_ + k] = d_[k*12 + 3 ] - tmpc*rho_half[(j+3 )*N_ + k + 1];
-                rho_half[(j+4 )*N_ + k] = d_[k*12 + 4 ] - tmpc*rho_half[(j+4 )*N_ + k + 1];
-                rho_half[(j+5 )*N_ + k] = d_[k*12 + 5 ] - tmpc*rho_half[(j+5 )*N_ + k + 1];
-                rho_half[(j+6 )*N_ + k] = d_[k*12 + 6 ] - tmpc*rho_half[(j+6 )*N_ + k + 1];
-                rho_half[(j+7 )*N_ + k] = d_[k*12 + 7 ] - tmpc*rho_half[(j+7 )*N_ + k + 1];
-                rho_half[(j+8 )*N_ + k] = d_[k*12 + 8 ] - tmpc*rho_half[(j+8 )*N_ + k + 1];
-                rho_half[(j+9 )*N_ + k] = d_[k*12 + 9 ] - tmpc*rho_half[(j+9 )*N_ + k + 1];
-                rho_half[(j+10)*N_ + k] = d_[k*12 + 10] - tmpc*rho_half[(j+10)*N_ + k + 1];
-                rho_half[(j+11)*N_ + k] = d_[k*12 + 11] - tmpc*rho_half[(j+11)*N_ + k + 1];
+                rho_half[(i  )*N_ + k] = d_[k*8    ] -
+                                         tmpc*rho_half[(i  )*N_ + k + 1];
+                rho_half[(i+1)*N_ + k] = d_[k*8 + 1] -
+                                         tmpc*rho_half[(i+1)*N_ + k + 1];
+                rho_half[(i+2)*N_ + k] = d_[k*8 + 2] -
+                                         tmpc*rho_half[(i+2)*N_ + k + 1];
+                rho_half[(i+3)*N_ + k] = d_[k*8 + 3] -
+                                         tmpc*rho_half[(i+3)*N_ + k + 1];
+                rho_half[(i+4)*N_ + k] = d_[k*8 + 4] -
+                                         tmpc*rho_half[(i+4)*N_ + k + 1];
+                rho_half[(i+5)*N_ + k] = d_[k*8 + 5] -
+                                         tmpc*rho_half[(i+5)*N_ + k + 1];
+                rho_half[(i+6)*N_ + k] = d_[k*8 + 6] -
+                                         tmpc*rho_half[(i+6)*N_ + k + 1];
+                rho_half[(i+7)*N_ + k] = d_[k*8 + 7] -
+                                         tmpc*rho_half[(i+7)*N_ + k + 1];
             }
         }
 
         /// Complete any remaining rows
-        for(; j < N_-1; ++j) {
+        for(; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[N_ + j - 1] + f1_*rho_[N_ + j]) +
-                    c1* rho_[N_ + j + 1];
+            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
+                    c1*rho_[(i+1)*N_ + 1];
             for(size_type k = 2; k < N_-2; k++) {
-                d_[k] = ( rho_[k*N_ + j - 1] + f1_*rho_[k*N_ + j] +
-                          rho_[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
+                d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
+                          rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[j*N_ + N_ - 2] = (    rho_[(N_-2)*N_ + j - 1] +
-                                       f1_*rho_[(N_-2)*N_ + j]     +
-                                           rho_[(N_-2)*N_ + j + 1] +
+            rho_half[i*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
+                                       f1_*rho_[(i+1)*N_ - 2] +
+                                           rho_[(i+2)*N_ - 2] +
                                            d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[j*N_ + k] = d_[k] - c_[k]*rho_half[j*N_ + k + 1];
+                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
         }
 
+        size_type j;
+
         /// For each column, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 12 for scalar replacement and preparation for AVX
-        for(j = 1; j < N_-12; j += 12) {
+        /// Loop unrolled by 8 for scalar replacement and preparation for AVX
+        for(j = 1; j < N_-8; j += 8) {
             /// First is the forward sweep in y direction
-            value_type tmp0, tmp1, tmp2 , tmp3 , tmp4, tmp5, tmp6, tmp7;
-            value_type tmp8, tmp9, tmp10, tmp11, tmpf;
+            value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
 
-            tmp0  = rho_half[N_ + j     ];
-            tmp1  = rho_half[N_ + j + 1 ];
-            tmp2  = rho_half[N_ + j + 2 ];
-            tmp3  = rho_half[N_ + j + 3 ];
-            tmp4  = rho_half[N_ + j + 4 ];
-            tmp5  = rho_half[N_ + j + 5 ];
-            tmp6  = rho_half[N_ + j + 6 ];
-            tmp7  = rho_half[N_ + j + 7 ];
-            tmp8  = rho_half[N_ + j + 8 ];
-            tmp9  = rho_half[N_ + j + 9 ];
-            tmp10 = rho_half[N_ + j + 10];
-            tmp11 = rho_half[N_ + j + 11];
+            tmp0 = rho_half[N_ + j    ];
+            tmp1 = rho_half[N_ + j + 1];
+            tmp2 = rho_half[N_ + j + 2];
+            tmp3 = rho_half[N_ + j + 3];
+            tmp4 = rho_half[N_ + j + 4];
+            tmp5 = rho_half[N_ + j + 5];
+            tmp6 = rho_half[N_ + j + 6];
+            tmp7 = rho_half[N_ + j + 7];
 
-            d_[12] = c1*(rho_half[N_ + j - 1] + f1_*tmp0 ) + c1*tmp1;
-            d_[13] = c1*(tmp0                 + f1_*tmp1 ) + c1*tmp2;
-            d_[14] = c1*(tmp1                 + f1_*tmp2 ) + c1*tmp3;
-            d_[15] = c1*(tmp2                 + f1_*tmp3 ) + c1*tmp4;
-            d_[16] = c1*(tmp3                 + f1_*tmp4 ) + c1*tmp5;
-            d_[17] = c1*(tmp4                 + f1_*tmp5 ) + c1*tmp6;
-            d_[18] = c1*(tmp5                 + f1_*tmp6 ) + c1*tmp7;
-            d_[19] = c1*(tmp6                 + f1_*tmp7 ) + c1*tmp8;
-            d_[20] = c1*(tmp7                 + f1_*tmp8 ) + c1*tmp9;
-            d_[21] = c1*(tmp8                 + f1_*tmp9 ) + c1*tmp10;
-            d_[22] = c1*(tmp9                 + f1_*tmp10) + c1*tmp11;
-            d_[23] = c1*(tmp10                + f1_*tmp11) + c1*rho_half[N_ + j + 12];
+            d_[8 ] = c1*(rho_half[N_ + j - 1] + f1_*tmp0) + c1*tmp1;
+            d_[9 ] = c1*(tmp0                 + f1_*tmp1) + c1*tmp2;
+            d_[10] = c1*(tmp1                 + f1_*tmp2) + c1*tmp3;
+            d_[11] = c1*(tmp2                 + f1_*tmp3) + c1*tmp4;
+            d_[12] = c1*(tmp3                 + f1_*tmp4) + c1*tmp5;
+            d_[13] = c1*(tmp4                 + f1_*tmp5) + c1*tmp6;
+            d_[14] = c1*(tmp5                 + f1_*tmp6) + c1*tmp7;
+            d_[15] = c1*(tmp6                 + f1_*tmp7) + c1*rho_half[N_ + j + 8];
 
             for(size_type k = 2; k < N_-2; k++) {
-                value_type tmp0, tmp1, tmp2 , tmp3 , tmp4, tmp5, tmp6, tmp7;
-                value_type tmp8, tmp9, tmp10, tmp11, tmpf;
+                value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
 
-                tmp0  = rho_half[k*N_ + j     ];
-                tmp1  = rho_half[k*N_ + j + 1 ];
-                tmp2  = rho_half[k*N_ + j + 2 ];
-                tmp3  = rho_half[k*N_ + j + 3 ];
-                tmp4  = rho_half[k*N_ + j + 4 ];
-                tmp5  = rho_half[k*N_ + j + 5 ];
-                tmp6  = rho_half[k*N_ + j + 6 ];
-                tmp7  = rho_half[k*N_ + j + 7 ];
-                tmp8  = rho_half[k*N_ + j + 8 ];
-                tmp9  = rho_half[k*N_ + j + 9 ];
-                tmp10 = rho_half[k*N_ + j + 10];
-                tmp11 = rho_half[k*N_ + j + 11];
+                tmp0 = rho_half[k*N_ + j    ];
+                tmp1 = rho_half[k*N_ + j + 1];
+                tmp2 = rho_half[k*N_ + j + 2];
+                tmp3 = rho_half[k*N_ + j + 3];
+                tmp4 = rho_half[k*N_ + j + 4];
+                tmp5 = rho_half[k*N_ + j + 5];
+                tmp6 = rho_half[k*N_ + j + 6];
+                tmp7 = rho_half[k*N_ + j + 7];
                 tmpf = c_rcp_[k];
 
-                d_[k*12     ] = ( rho_half[k*N_ + j - 1] + f1_*tmp0 + tmp1 +
-                                  d_[(k-1)*12     ] ) * tmpf;
-                d_[k*12 + 1 ] = ( tmp0  + f1_*tmp1  + tmp2  +
-                                  d_[(k-1)*12 + 1 ] ) * tmpf;
-                d_[k*12 + 2 ] = ( tmp1  + f1_*tmp2  + tmp3  +
-                                  d_[(k-1)*12 + 2 ] ) * tmpf;
-                d_[k*12 + 3 ] = ( tmp2  + f1_*tmp3  + tmp4  +
-                                  d_[(k-1)*12 + 3 ] ) * tmpf;
-                d_[k*12 + 4 ] = ( tmp3  + f1_*tmp4  + tmp5  +
-                                  d_[(k-1)*12 + 4 ] ) * tmpf;
-                d_[k*12 + 5 ] = ( tmp4  + f1_*tmp5  + tmp6  +
-                                  d_[(k-1)*12 + 5 ] ) * tmpf;
-                d_[k*12 + 6 ] = ( tmp5  + f1_*tmp6  + tmp7  +
-                                  d_[(k-1)*12 + 6 ] ) * tmpf;
-                d_[k*12 + 7 ] = ( tmp6  + f1_*tmp7  + tmp8  +
-                                  d_[(k-1)*12 + 7 ] ) * tmpf;
-                d_[k*12 + 8 ] = ( tmp7  + f1_*tmp8  + tmp9  +
-                                  d_[(k-1)*12 + 8 ] ) * tmpf;
-                d_[k*12 + 9 ] = ( tmp8  + f1_*tmp9  + tmp10 +
-                                  d_[(k-1)*12 + 9 ] ) * tmpf;
-                d_[k*12 + 10] = ( tmp9  + f1_*tmp10 + tmp11 +
-                                  d_[(k-1)*12 + 10] ) * tmpf;
-                d_[k*12 + 11] = ( tmp10 + f1_*tmp11 + rho_half[k*N_ + j + 12] +
-                                  d_[(k-1)*12 + 11] ) * tmpf;
+                d_[k*8    ] = ( rho_half[k*N_ + j - 1] + f1_*tmp0 + tmp1 +
+                                d_[(k-1)*8    ] ) * tmpf;
+                d_[k*8 + 1] = ( tmp0 + f1_*tmp1 + tmp2 +
+                                d_[(k-1)*8 + 1] ) * tmpf;
+                d_[k*8 + 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+                                d_[(k-1)*8 + 2] ) * tmpf;
+                d_[k*8 + 3] = ( tmp2 + f1_*tmp3 + tmp4 +
+                                d_[(k-1)*8 + 3] ) * tmpf;
+                d_[k*8 + 4] = ( tmp3 + f1_*tmp4 + tmp5 +
+                                d_[(k-1)*8 + 4] ) * tmpf;
+                d_[k*8 + 5] = ( tmp4 + f1_*tmp5 + tmp6 +
+                                d_[(k-1)*8 + 5] ) * tmpf;
+                d_[k*8 + 6] = ( tmp5 + f1_*tmp6 + tmp7 +
+                                d_[(k-1)*8 + 6] ) * tmpf;
+                d_[k*8 + 7] = ( tmp6 + f1_*tmp7 + rho_half[k*N_ + j + 8] +
+                                d_[(k-1)*8 + 7] ) * tmpf;
             }
-
             /// Second is the back substitution for the full time step
-            tmp0  = rho_half[(N_-2)*N_ + j     ];
-            tmp1  = rho_half[(N_-2)*N_ + j + 1 ];
-            tmp2  = rho_half[(N_-2)*N_ + j + 2 ];
-            tmp3  = rho_half[(N_-2)*N_ + j + 3 ];
-            tmp4  = rho_half[(N_-2)*N_ + j + 4 ];
-            tmp5  = rho_half[(N_-2)*N_ + j + 5 ];
-            tmp6  = rho_half[(N_-2)*N_ + j + 6 ];
-            tmp7  = rho_half[(N_-2)*N_ + j + 7 ];
-            tmp8  = rho_half[(N_-2)*N_ + j + 8 ];
-            tmp9  = rho_half[(N_-2)*N_ + j + 9 ];
-            tmp10 = rho_half[(N_-2)*N_ + j + 10];
-            tmp11 = rho_half[(N_-2)*N_ + j + 11];
+            tmp0 = rho_half[(N_-2)*N_ + j];
+            tmp1 = rho_half[(N_-2)*N_ + j + 1];
+            tmp2 = rho_half[(N_-2)*N_ + j + 2];
+            tmp3 = rho_half[(N_-2)*N_ + j + 3];
+            tmp4 = rho_half[(N_-2)*N_ + j + 4];
+            tmp5 = rho_half[(N_-2)*N_ + j + 5];
+            tmp6 = rho_half[(N_-2)*N_ + j + 6];
+            tmp7 = rho_half[(N_-2)*N_ + j + 7];
             tmpf = c_rcp_[N_-2];
 
-            rho_[(j+1 )*N_ - 2] = ( rho_half[(N_-2)*N_ + j - 1] + f1_*tmp0 +
-                                    tmp1  + d_[12*N_ - 36] ) * tmpf;
-            rho_[(j+2 )*N_ - 2] = ( tmp0  + f1_*tmp1  +
-                                    tmp2  + d_[12*N_ - 35] ) * tmpf;
-            rho_[(j+3 )*N_ - 2] = ( tmp1  + f1_*tmp2  +
-                                    tmp3  + d_[12*N_ - 34] ) * tmpf;
-            rho_[(j+4 )*N_ - 2] = ( tmp2  + f1_*tmp3  +
-                                    tmp4  + d_[12*N_ - 33] ) * tmpf;
-            rho_[(j+5 )*N_ - 2] = ( tmp3  + f1_*tmp4  +
-                                    tmp5  + d_[12*N_ - 32] ) * tmpf;
-            rho_[(j+6 )*N_ - 2] = ( tmp4  + f1_*tmp5  +
-                                    tmp6  + d_[12*N_ - 31] ) * tmpf;
-            rho_[(j+7 )*N_ - 2] = ( tmp5  + f1_*tmp6  +
-                                    tmp7  + d_[12*N_ - 30] ) * tmpf;
-            rho_[(j+8 )*N_ - 2] = ( tmp6  + f1_*tmp7  +
-                                    tmp8  + d_[12*N_ - 29] ) * tmpf;
-            rho_[(j+9 )*N_ - 2] = ( tmp7  + f1_*tmp8  +
-                                    tmp9  + d_[12*N_ - 28] ) * tmpf;
-            rho_[(j+10)*N_ - 2] = ( tmp8  + f1_*tmp9  +
-                                    tmp10 + d_[12*N_ - 27] ) * tmpf;
-            rho_[(j+11)*N_ - 2] = ( tmp9  + f1_*tmp10 +
-                                    tmp11 + d_[12*N_ - 26] ) * tmpf;
-            rho_[(j+12)*N_ - 2] = ( tmp10 + f1_*tmp11 +
-                                    rho_half[(N_-2)*N_ + j + 12] + d_[12*N_ - 25] ) * tmpf;
+            rho_[(N_-2)*N_ + j    ] = ( rho_half[(N_-2)*N_ + j - 1] + f1_*tmp0 +
+                                        tmp1 + d_[8*N_ - 24] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 1] = ( tmp0 + f1_*tmp1 +
+                                        tmp2 + d_[8*N_ - 23] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 2] = ( tmp1 + f1_*tmp2 +
+                                        tmp3 + d_[8*N_ - 22] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 3] = ( tmp2 + f1_*tmp3 +
+                                        tmp4 + d_[8*N_ - 21] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 4] = ( tmp3 + f1_*tmp4 +
+                                        tmp5 + d_[8*N_ - 20] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 5] = ( tmp4 + f1_*tmp5 +
+                                        tmp6 + d_[8*N_ - 19] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 6] = ( tmp5 + f1_*tmp6 +
+                                        tmp7 + d_[8*N_ - 18] ) * tmpf;
+            rho_[(N_-2)*N_ + j + 7] = ( tmp6 + f1_*tmp7 +
+                                        rho_half[(N_-2)*N_ + j + 8] + d_[8*N_ - 17] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
                 value_type tmpc = c_[k];
 
-                rho_[(j   )*N_ + k] = d_[k*12     ] - tmpc*rho_[(j   )*N_ + k + 1];
-                rho_[(j+1 )*N_ + k] = d_[k*12 + 1 ] - tmpc*rho_[(j+1 )*N_ + k + 1];
-                rho_[(j+2 )*N_ + k] = d_[k*12 + 2 ] - tmpc*rho_[(j+2 )*N_ + k + 1];
-                rho_[(j+3 )*N_ + k] = d_[k*12 + 3 ] - tmpc*rho_[(j+3 )*N_ + k + 1];
-                rho_[(j+4 )*N_ + k] = d_[k*12 + 4 ] - tmpc*rho_[(j+4 )*N_ + k + 1];
-                rho_[(j+5 )*N_ + k] = d_[k*12 + 5 ] - tmpc*rho_[(j+5 )*N_ + k + 1];
-                rho_[(j+6 )*N_ + k] = d_[k*12 + 6 ] - tmpc*rho_[(j+6 )*N_ + k + 1];
-                rho_[(j+7 )*N_ + k] = d_[k*12 + 7 ] - tmpc*rho_[(j+7 )*N_ + k + 1];
-                rho_[(j+8 )*N_ + k] = d_[k*12 + 8 ] - tmpc*rho_[(j+8 )*N_ + k + 1];
-                rho_[(j+9 )*N_ + k] = d_[k*12 + 9 ] - tmpc*rho_[(j+9 )*N_ + k + 1];
-                rho_[(j+10)*N_ + k] = d_[k*12 + 10] - tmpc*rho_[(j+10)*N_ + k + 1];
-                rho_[(j+11)*N_ + k] = d_[k*12 + 11] - tmpc*rho_[(j+11)*N_ + k + 1];
+                rho_[k*N_ + j    ] = d_[k*8    ] - tmpc*rho_[(k + 1)*N_ + j    ];
+                rho_[k*N_ + j + 1] = d_[k*8 + 1] - tmpc*rho_[(k + 1)*N_ + j + 1];
+                rho_[k*N_ + j + 2] = d_[k*8 + 2] - tmpc*rho_[(k + 1)*N_ + j + 2];
+                rho_[k*N_ + j + 3] = d_[k*8 + 3] - tmpc*rho_[(k + 1)*N_ + j + 3];
+                rho_[k*N_ + j + 4] = d_[k*8 + 4] - tmpc*rho_[(k + 1)*N_ + j + 4];
+                rho_[k*N_ + j + 5] = d_[k*8 + 5] - tmpc*rho_[(k + 1)*N_ + j + 5];
+                rho_[k*N_ + j + 6] = d_[k*8 + 6] - tmpc*rho_[(k + 1)*N_ + j + 6];
+                rho_[k*N_ + j + 7] = d_[k*8 + 7] - tmpc*rho_[(k + 1)*N_ + j + 7];
             }
         }
 
@@ -356,12 +289,12 @@ public:
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[j*N_ + N_ - 2] = (    rho_half[(N_-2)*N_ + j - 1] +
-                                   f1_*rho_half[(N_-2)*N_ + j]     +
-                                       rho_half[(N_-2)*N_ + j + 1] +
-                                       d_[N_-3] ) * c_rcp_[N_-2];
+            rho_[(N_ - 2)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
+                                     f1_*rho_half[(N_-2)*N_ + j]     +
+                                         rho_half[(N_-2)*N_ + j + 1] +
+                                         d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[j*N_ + k] = d_[k] - c_[k]*rho_[j*N_ + k + 1];
+                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         }
 
@@ -506,12 +439,12 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running Scalar_transposed_12 Simulations" << '\n';
+    std::cout << "Running Scalar_original_8 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 100;
+    size_type n_runs = 1;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
