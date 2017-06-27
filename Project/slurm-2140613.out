@@ -1,0 +1,151 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+OMP_NUM_THREADS = 12
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 6816632723
+Total program execution time = 0h : 4m : 27.23s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9511211644
+Total program execution time = 0h : 6m : 13.611s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9909898887
+Total program execution time = 0h : 6m : 21.6405s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8016527355
+Total program execution time = 0h : 5m : 12.6629s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8211621882
+Total program execution time = 0h : 5m : 20.7855s
+
+OMP_NUM_THREADS = 6
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 7427581546
+Total program execution time = 0h : 4m : 47.3528s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 11272802605
+Total program execution time = 0h : 7m : 16.3658s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 11628907010
+Total program execution time = 0h : 7m : 27.8817s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8012312865
+Total program execution time = 0h : 5m : 10.3685s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8555157683
+Total program execution time = 0h : 5m : 31.2879s
+
+OMP_NUM_THREADS = 4
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8807160177
+Total program execution time = 0h : 5m : 39.1574s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 14058169042
+Total program execution time = 0h : 9m : 1.96799s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 15160679300
+Total program execution time = 0h : 9m : 44.3083s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 10056823238
+Total program execution time = 0h : 6m : 27.9425s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 10277608816
+Total program execution time = 0h : 6m : 35.9644s
+
+OMP_NUM_THREADS = 3
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 10446202291
+Total program execution time = 0h : 6m : 42.2571s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 16516337127
+Total program execution time = 0h : 10m : 36.6826s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 18086785441
+Total program execution time = 0h : 11m : 37.3457s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 11868812170
+Total program execution time = 0h : 7m : 37.2408s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 11504924508
+Total program execution time = 0h : 7m : 23.4357s
+
+OMP_NUM_THREADS = 2
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 12618062828
+Total program execution time = 0h : 8m : 7.06744s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 20423076685
+Total program execution time = 0h : 13m : 7.17517s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 22281130664
+Total program execution time = 0h : 14m : 19.912s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+slurmstepd: error: *** STEP 2140613.23 ON nid03202 CANCELLED AT 2017-06-27T23:31:58 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 2140613 ON nid03202 CANCELLED AT 2017-06-27T23:31:58 DUE TO TIME LIMIT ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: got SIGCONT
+srun: forcing job termination

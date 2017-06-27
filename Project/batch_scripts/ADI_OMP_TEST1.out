@@ -1,0 +1,85 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+OMP_NUM_THREADS = 12
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 7815334408
+Total program execution time = 0h : 5m : 5.02153s
+
+OMP_NUM_THREADS = 11
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8906888355
+Total program execution time = 0h : 5m : 44.9931s
+
+OMP_NUM_THREADS = 10
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9914573253
+Total program execution time = 0h : 6m : 25.2157s
+
+OMP_NUM_THREADS = 9
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9580618079
+Total program execution time = 0h : 6m : 13.1308s
+
+OMP_NUM_THREADS = 8
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9657411305
+Total program execution time = 0h : 6m : 12.6528s
+
+OMP_NUM_THREADS = 7
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 8940258444
+Total program execution time = 0h : 5m : 45.7729s
+
+OMP_NUM_THREADS = 6
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 7867635516
+Total program execution time = 0h : 5m : 3.54401s
+
+OMP_NUM_THREADS = 5
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9419151107
+Total program execution time = 0h : 6m : 2.80015s
+
+OMP_NUM_THREADS = 4
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 9297209235
+Total program execution time = 0h : 5m : 58.3315s
+
+OMP_NUM_THREADS = 3
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 10871734209
+Total program execution time = 0h : 6m : 58.6669s
+
+OMP_NUM_THREADS = 2
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 12993303801
+Total program execution time = 0h : 8m : 23.6317s
+
+OMP_NUM_THREADS = 1
+Running AVX_OMP_untransposed Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 12846739528
+Total program execution time = 0h : 8m : 14.2991s
+

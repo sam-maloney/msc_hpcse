@@ -9,27 +9,14 @@
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=11
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=10
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=9
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=8
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=7
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=6
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=5
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=4
-srun ./ADI_omp.exe 1 98 0.0000005
-export OMP_NUM_THREADS=3
-srun ./ADI_omp.exe 1 98 0.0000005
 export OMP_NUM_THREADS=2
-srun ./ADI_omp.exe 1 98 0.0000005
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun ./ADI_omp_scalar_original8.exe 1 98 0.0000005
+srun ./ADI_omp_scalar_transposed8.exe 1 98 0.0000005
 export OMP_NUM_THREADS=1
-srun ./ADI_omp.exe 1 98 0.0000005
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun ./ADI_omp_AVX_original8.exe 1 98 0.0000005
+srun ./ADI_omp_AVX_transposed4.exe 1 98 0.0000005
+srun ./ADI_omp_AVX_transposed8.exe 1 98 0.0000005
+srun ./ADI_omp_scalar_original8.exe 1 98 0.0000005
+srun ./ADI_omp_scalar_transposed8.exe 1 98 0.0000005

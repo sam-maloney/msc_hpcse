@@ -3,7 +3,6 @@
 #include <vector>
 #include <cmath>
 #include <x86intrin.h>
-#include <omp.h>
 
 /// Select which runtime measure to use
 //#define USE_TIMER
@@ -62,138 +61,153 @@ public:
         /// Dirichlet boundaries; central differences in space
 
         value_type c1 = -c_[1];
-        __m256d f1_v  = _mm256_set1_pd( f1_  );
-        __m256d c1_v  = _mm256_set1_pd(-c_[1]);
+        __m256d f1_v = _mm256_set1_pd( f1_  );
+        __m256d c1_v = _mm256_set1_pd(-c_[1]);
 
         #pragma omp parallel
         {
 
-        while( time() < t_max ) {
+        while ( time() < t_max ) {
 
         /// For each row, apply Thomas algorithm for implicit solution
-        /// Loop unrolled by 8 for data reuse and preparation for AVX
+        /// Loop unrolled by 8 for data reuse and AVX
         #pragma omp for nowait
-        for(size_type i = 1; i < N_-8; i += 8) {
-            /// First is the forward sweep in x direction
-            value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
+        for(size_type j = 1; j < N_-8; j += 8) {
+            /// First is the forward sweep in y direction
+            __m256d rho_0_lv, rho_0_cv, rho_0_rv;
+            __m256d rho_1_lv, rho_1_cv, rho_1_rv;
+            __m256d tmp0_v , tmp1_v , tmp2_v , tmp3_v, tmp4_v, tmp5_v;
+            __m256d d_pr0_v, d_pr1_v, c_rcp_v;
 
-            tmp0 = rho_[(i  )*N_ + 1];
-            tmp1 = rho_[(i+1)*N_ + 1];
-            tmp2 = rho_[(i+2)*N_ + 1];
-            tmp3 = rho_[(i+3)*N_ + 1];
-            tmp4 = rho_[(i+4)*N_ + 1];
-            tmp5 = rho_[(i+5)*N_ + 1];
-            tmp6 = rho_[(i+6)*N_ + 1];
-            tmp7 = rho_[(i+7)*N_ + 1];
+            rho_0_lv = _mm256_loadu_pd(rho_.data() + N_ + j - 1);
+            rho_0_cv = _mm256_loadu_pd(rho_.data() + N_ + j    );
+            rho_0_rv = _mm256_loadu_pd(rho_.data() + N_ + j + 1);
+            rho_1_lv = _mm256_loadu_pd(rho_.data() + N_ + j + 3);
+            rho_1_cv = _mm256_loadu_pd(rho_.data() + N_ + j + 4);
+            rho_1_rv = _mm256_loadu_pd(rho_.data() + N_ + j + 5);
 
-            d_[8 ] = c1*(rho_[(i-1)*N_ + 1] + f1_*tmp0) + c1*tmp1;
-            d_[9 ] = c1*(tmp0               + f1_*tmp1) + c1*tmp2;
-            d_[10] = c1*(tmp1               + f1_*tmp2) + c1*tmp3;
-            d_[11] = c1*(tmp2               + f1_*tmp3) + c1*tmp4;
-            d_[12] = c1*(tmp3               + f1_*tmp4) + c1*tmp5;
-            d_[13] = c1*(tmp4               + f1_*tmp5) + c1*tmp6;
-            d_[14] = c1*(tmp5               + f1_*tmp6) + c1*tmp7;
-            d_[15] = c1*(tmp6               + f1_*tmp7) + c1*rho_[(i+8)*N_ + 1];
+            tmp0_v = _mm256_fmadd_pd(f1_v, rho_0_cv, rho_0_lv);
+            tmp1_v = _mm256_mul_pd  (c1_v, rho_0_rv);
+            tmp2_v = _mm256_fmadd_pd(c1_v, tmp0_v      , tmp1_v);
+            tmp3_v = _mm256_fmadd_pd(f1_v, rho_1_cv, rho_1_lv);
+            tmp4_v = _mm256_mul_pd  (c1_v, rho_1_rv);
+            tmp5_v = _mm256_fmadd_pd(c1_v, tmp3_v      , tmp4_v);
 
-            for(size_type k = 2; k < N_-2; k++) {
-                value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
+            c_rcp_v = _mm256_set1_pd(c_rcp_[2]);
+            d_pr0_v = _mm256_mul_pd (tmp2_v, c_rcp_v);
+            d_pr1_v = _mm256_mul_pd (tmp5_v, c_rcp_v);
 
-                tmp0 = rho_[(i  )*N_ + k];
-                tmp1 = rho_[(i+1)*N_ + k];
-                tmp2 = rho_[(i+2)*N_ + k];
-                tmp3 = rho_[(i+3)*N_ + k];
-                tmp4 = rho_[(i+4)*N_ + k];
-                tmp5 = rho_[(i+5)*N_ + k];
-                tmp6 = rho_[(i+6)*N_ + k];
-                tmp7 = rho_[(i+7)*N_ + k];
-                tmpf = c_rcp_[k];
+            _mm256_storeu_pd(d_.data() + 8 , tmp2_v);
+            _mm256_storeu_pd(d_.data() + 12, tmp5_v);
 
-                d_[k*8    ] = ( rho_[(i-1)*N_ + k] + f1_*tmp0 + tmp1 +
-                                d_[(k-1)*8    ] ) * tmpf;
-                d_[k*8 + 1] = ( tmp0 + f1_*tmp1 + tmp2 +
-                                d_[(k-1)*8 + 1] ) * tmpf;
-                d_[k*8 + 2] = ( tmp1 + f1_*tmp2 + tmp3 +
-                                d_[(k-1)*8 + 2] ) * tmpf;
-                d_[k*8 + 3] = ( tmp2 + f1_*tmp3 + tmp4 +
-                                d_[(k-1)*8 + 3] ) * tmpf;
-                d_[k*8 + 4] = ( tmp3 + f1_*tmp4 + tmp5 +
-                                d_[(k-1)*8 + 4] ) * tmpf;
-                d_[k*8 + 5] = ( tmp4 + f1_*tmp5 + tmp6 +
-                                d_[(k-1)*8 + 5] ) * tmpf;
-                d_[k*8 + 6] = ( tmp5 + f1_*tmp6 + tmp7 +
-                                d_[(k-1)*8 + 6] ) * tmpf;
-                d_[k*8 + 7] = ( tmp6 + f1_*tmp7 + rho_[(i+8)*N_ + k] +
-                                d_[(k-1)*8 + 7] ) * tmpf;
+            for(size_type k = 2; k < N_-2; k += 1) {
+                __m256d rho_0_lv, rho_0_cv, rho_0_rv;
+                __m256d rho_1_lv, rho_1_cv, rho_1_rv;
+                __m256d tmp0_v , tmp1_v , tmp2_v, tmp3_v, tmp4_v, tmp5_v;
+
+                rho_0_lv = _mm256_loadu_pd(rho_.data() + k*N_ + j - 1);
+                rho_0_cv = _mm256_loadu_pd(rho_.data() + k*N_ + j    );
+                rho_0_rv = _mm256_loadu_pd(rho_.data() + k*N_ + j + 1);
+                rho_1_lv = _mm256_loadu_pd(rho_.data() + k*N_ + j + 3);
+                rho_1_cv = _mm256_loadu_pd(rho_.data() + k*N_ + j + 4);
+                rho_1_rv = _mm256_loadu_pd(rho_.data() + k*N_ + j + 5);
+
+                tmp0_v = _mm256_fmadd_pd(f1_v   , rho_0_cv, rho_0_lv);
+                tmp1_v = _mm256_fmadd_pd(c_rcp_v, rho_0_rv, d_pr0_v     );
+                tmp2_v = _mm256_fmadd_pd(c_rcp_v, tmp0_v      , tmp1_v      );
+                tmp3_v = _mm256_fmadd_pd(f1_v   , rho_1_cv, rho_1_lv);
+                tmp4_v = _mm256_fmadd_pd(c_rcp_v, rho_1_rv, d_pr1_v     );
+                tmp5_v = _mm256_fmadd_pd(c_rcp_v, tmp3_v      , tmp4_v      );
+
+                c_rcp_v = _mm256_set1_pd(c_rcp_[k+1]);
+                d_pr0_v = _mm256_mul_pd (tmp2_v, c_rcp_v);
+                d_pr1_v = _mm256_mul_pd (tmp5_v, c_rcp_v);
+                _mm256_storeu_pd(d_.data() + 8*k    , tmp2_v);
+                _mm256_storeu_pd(d_.data() + 8*k + 4, tmp5_v);
             }
 
-            /// Second is the back substitution for the half time step
-            tmp0 = rho_[(i+1)*N_ - 2];
-            tmp1 = rho_[(i+2)*N_ - 2];
-            tmp2 = rho_[(i+3)*N_ - 2];
-            tmp3 = rho_[(i+4)*N_ - 2];
-            tmp4 = rho_[(i+5)*N_ - 2];
-            tmp5 = rho_[(i+6)*N_ - 2];
-            tmp6 = rho_[(i+7)*N_ - 2];
-            tmp7 = rho_[(i+8)*N_ - 2];
-            tmpf = c_rcp_[N_-2];
+            /// Second is the back substitution for the full time step
+            __m256d rho_half_pr0_v, rho_half_pr1_v;
 
-            rho_half[(i+1)*N_ - 2] = ( rho_[i*N_ - 2]  + f1_*tmp0 + tmp1 +
-                                       d_[8*N_ - 24] ) * tmpf;
-            rho_half[(i+2)*N_ - 2] = ( tmp0 + f1_*tmp1 + tmp2 +
-                                       d_[8*N_ - 23] ) * tmpf;
-            rho_half[(i+3)*N_ - 2] = ( tmp1 + f1_*tmp2 + tmp3 +
-                                       d_[8*N_ - 22] ) * tmpf;
-            rho_half[(i+4)*N_ - 2] = ( tmp2 + f1_*tmp3 + tmp4 +
-                                       d_[8*N_ - 21] ) * tmpf;
-            rho_half[(i+5)*N_ - 2] = ( tmp3 + f1_*tmp4 + tmp5 +
-                                       d_[8*N_ - 20] ) * tmpf;
-            rho_half[(i+6)*N_ - 2] = ( tmp4 + f1_*tmp5 + tmp6 +
-                                       d_[8*N_ - 19] ) * tmpf;
-            rho_half[(i+7)*N_ - 2] = ( tmp5 + f1_*tmp6 + tmp7 +
-                                       d_[8*N_ - 18] ) * tmpf;
-            rho_half[(i+8)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+9)*N_ - 2] +
-                                       d_[8*N_ - 17] ) * tmpf;
+            rho_0_lv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j - 1);
+            rho_0_cv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j    );
+            rho_0_rv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j + 1);
+            rho_1_lv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j + 3);
+            rho_1_cv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j + 4);
+            rho_1_rv = _mm256_loadu_pd(rho_.data() + (N_-2)*N_ + j + 5);
+
+            tmp0_v         = _mm256_fmadd_pd(f1_v   , rho_0_cv, rho_0_lv);
+            tmp1_v         = _mm256_fmadd_pd(c_rcp_v, rho_0_rv, d_pr0_v     );
+            rho_half_pr0_v = _mm256_fmadd_pd(c_rcp_v, tmp0_v      , tmp1_v      );
+            tmp2_v         = _mm256_fmadd_pd(f1_v   , rho_1_cv, rho_1_lv);
+            tmp3_v         = _mm256_fmadd_pd(c_rcp_v, rho_1_rv, d_pr1_v     );
+            rho_half_pr1_v = _mm256_fmadd_pd(c_rcp_v, tmp2_v      , tmp3_v      );
+
+            __m128d sse0, sse1, sse2, sse3;
+
+            sse0 = _mm256_extractf128_pd(rho_half_pr0_v, 0);
+            sse1 = _mm256_extractf128_pd(rho_half_pr0_v, 1);
+
+            _mm_store_sd (rho_half.data() + (j+1)*N_ - 2, sse0);
+            _mm_storeh_pd(rho_half.data() + (j+2)*N_ - 2, sse0);
+            _mm_store_sd (rho_half.data() + (j+3)*N_ - 2, sse1);
+            _mm_storeh_pd(rho_half.data() + (j+4)*N_ - 2, sse1);
+
+            sse2 = _mm256_extractf128_pd(rho_half_pr1_v, 0);
+            sse3 = _mm256_extractf128_pd(rho_half_pr1_v, 1);
+
+            _mm_store_sd (rho_half.data() + (j+5)*N_ - 2, sse2);
+            _mm_storeh_pd(rho_half.data() + (j+6)*N_ - 2, sse2);
+            _mm_store_sd (rho_half.data() + (j+7)*N_ - 2, sse3);
+            _mm_storeh_pd(rho_half.data() + (j+8)*N_ - 2, sse3);
 
             for(size_type k = N_-3; k > 0; k--) {
-                value_type tmpc = c_[k];
+                __m256d c_v, d0_v, d1_v;
+                __m128d sse0, sse1, sse2, sss3;
 
-                rho_half[(i  )*N_ + k] = d_[k*8    ] -
-                                         tmpc*rho_half[(i  )*N_ + k + 1];
-                rho_half[(i+1)*N_ + k] = d_[k*8 + 1] -
-                                         tmpc*rho_half[(i+1)*N_ + k + 1];
-                rho_half[(i+2)*N_ + k] = d_[k*8 + 2] -
-                                         tmpc*rho_half[(i+2)*N_ + k + 1];
-                rho_half[(i+3)*N_ + k] = d_[k*8 + 3] -
-                                         tmpc*rho_half[(i+3)*N_ + k + 1];
-                rho_half[(i+4)*N_ + k] = d_[k*8 + 4] -
-                                         tmpc*rho_half[(i+4)*N_ + k + 1];
-                rho_half[(i+5)*N_ + k] = d_[k*8 + 5] -
-                                         tmpc*rho_half[(i+5)*N_ + k + 1];
-                rho_half[(i+6)*N_ + k] = d_[k*8 + 6] -
-                                         tmpc*rho_half[(i+6)*N_ + k + 1];
-                rho_half[(i+7)*N_ + k] = d_[k*8 + 7] -
-                                         tmpc*rho_half[(i+7)*N_ + k + 1];
+                c_v  = _mm256_set1_pd(-c_[k]);
+                d0_v = _mm256_loadu_pd(d_.data() + k*8);
+                d1_v = _mm256_loadu_pd(d_.data() + k*8 + 4);
+
+                rho_half_pr0_v = _mm256_fmadd_pd(c_v, rho_half_pr0_v, d0_v);
+                rho_half_pr1_v = _mm256_fmadd_pd(c_v, rho_half_pr1_v, d1_v);
+
+                sse0 = _mm256_extractf128_pd(rho_half_pr0_v, 0);
+                sse1 = _mm256_extractf128_pd(rho_half_pr0_v, 1);
+
+                _mm_store_sd (rho_half.data() + (j  )*N_ + k, sse0);
+                _mm_storeh_pd(rho_half.data() + (j+1)*N_ + k, sse0);
+                _mm_store_sd (rho_half.data() + (j+2)*N_ + k, sse1);
+                _mm_storeh_pd(rho_half.data() + (j+3)*N_ + k, sse1);
+
+                sse2 = _mm256_extractf128_pd(rho_half_pr1_v, 0);
+                sse3 = _mm256_extractf128_pd(rho_half_pr1_v, 1);
+
+                _mm_store_sd (rho_half.data() + (j+4)*N_ + k, sse2);
+                _mm_storeh_pd(rho_half.data() + (j+5)*N_ + k, sse2);
+                _mm_store_sd (rho_half.data() + (j+6)*N_ + k, sse3);
+                _mm_storeh_pd(rho_half.data() + (j+7)*N_ + k, sse3);
             }
         } // main row loop
 
         #pragma omp single
         {
         /// Complete any remaining rows
-        for(size_type i = remainder_index_ ; i < N_-1; ++i) {
+        for(size_type j = remainder_index_ ; j < N_-1; ++j) {
             /// First is the forward sweep in x direction
-            d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
-                    c1*rho_[(i+1)*N_ + 1];
+            d_[1] = c1*(rho_[N_ + j - 1] + f1_*rho_[N_ + j]) +
+                    c1* rho_[N_ + j + 1];
             for(size_type k = 2; k < N_-2; k++) {
-                d_[k] = ( rho_[(i-1)*N_ + k] + f1_*rho_[i*N_ + k] +
-                          rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
+                d_[k] = ( rho_[k*N_ + j - 1] + f1_*rho_[k*N_ + j] +
+                          rho_[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[i*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
-                                       f1_*rho_[(i+1)*N_ - 2] +
-                                           rho_[(i+2)*N_ - 2] +
+            rho_half[j*N_ + N_ - 2] = (    rho_[(N_-2)*N_ + j - 1] +
+                                       f1_*rho_[(N_-2)*N_ + j]     +
+                                           rho_[(N_-2)*N_ + j + 1] +
                                            d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
+                rho_half[j*N_ + k] = d_[k] - c_[k]*rho_half[j*N_ + k + 1];
             }
         } // remaining row loop
         } // OMP single region
@@ -268,16 +282,31 @@ public:
             tmp0_v    = _mm256_fmadd_pd(f1_v   , rho_half0_cv, rho_half0_lv);
             tmp1_v    = _mm256_fmadd_pd(c_rcp_v, rho_half0_rv, d_pr0_v     );
             rho_pr0_v = _mm256_fmadd_pd(c_rcp_v, tmp0_v      , tmp1_v      );
-            tmp3_v    = _mm256_fmadd_pd(f1_v   , rho_half1_cv, rho_half1_lv);
-            tmp4_v    = _mm256_fmadd_pd(c_rcp_v, rho_half1_rv, d_pr1_v     );
-            rho_pr1_v = _mm256_fmadd_pd(c_rcp_v, tmp3_v      , tmp4_v      );
+            tmp2_v    = _mm256_fmadd_pd(f1_v   , rho_half1_cv, rho_half1_lv);
+            tmp3_v    = _mm256_fmadd_pd(c_rcp_v, rho_half1_rv, d_pr1_v     );
+            rho_pr1_v = _mm256_fmadd_pd(c_rcp_v, tmp2_v      , tmp3_v      );
 
-            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j    , rho_pr0_v);
-            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j + 4, rho_pr1_v);
+            __m128d sse0, sse1, sse2, sse3;
+
+            sse0 = _mm256_extractf128_pd(rho_pr0_v, 0);
+            sse1 = _mm256_extractf128_pd(rho_pr0_v, 1);
+
+            _mm_store_sd (rho_.data() + (j+1)*N_ - 2, sse0);
+            _mm_storeh_pd(rho_.data() + (j+2)*N_ - 2, sse0);
+            _mm_store_sd (rho_.data() + (j+3)*N_ - 2, sse1);
+            _mm_storeh_pd(rho_.data() + (j+4)*N_ - 2, sse1);
+
+            sse2 = _mm256_extractf128_pd(rho_pr1_v, 0);
+            sse3 = _mm256_extractf128_pd(rho_pr1_v, 1);
+
+            _mm_store_sd (rho_.data() + (j+5)*N_ - 2, sse2);
+            _mm_storeh_pd(rho_.data() + (j+6)*N_ - 2, sse2);
+            _mm_store_sd (rho_.data() + (j+7)*N_ - 2, sse3);
+            _mm_storeh_pd(rho_.data() + (j+8)*N_ - 2, sse3);
 
             for(size_type k = N_-3; k > 0; k--) {
                 __m256d c_v, d0_v, d1_v;
-                __m256d tmp0_v, tmp1_v;
+                __m128d sse0, sse1, sse2, sss3;
 
                 c_v  = _mm256_set1_pd(-c_[k]);
                 d0_v = _mm256_loadu_pd(d_.data() + k*8);
@@ -285,8 +314,22 @@ public:
 
                 rho_pr0_v = _mm256_fmadd_pd(c_v, rho_pr0_v, d0_v);
                 rho_pr1_v = _mm256_fmadd_pd(c_v, rho_pr1_v, d1_v);
-                _mm256_storeu_pd(rho_.data() + k*N_ + j    , rho_pr0_v);
-                _mm256_storeu_pd(rho_.data() + k*N_ + j + 4, rho_pr1_v);
+
+                sse0 = _mm256_extractf128_pd(rho_pr0_v, 0);
+                sse1 = _mm256_extractf128_pd(rho_pr0_v, 1);
+
+                _mm_store_sd (rho_.data() + (j  )*N_ + k, sse0);
+                _mm_storeh_pd(rho_.data() + (j+1)*N_ + k, sse0);
+                _mm_store_sd (rho_.data() + (j+2)*N_ + k, sse1);
+                _mm_storeh_pd(rho_.data() + (j+3)*N_ + k, sse1);
+
+                sse2 = _mm256_extractf128_pd(rho_pr1_v, 0);
+                sse3 = _mm256_extractf128_pd(rho_pr1_v, 1);
+
+                _mm_store_sd (rho_.data() + (j+4)*N_ + k, sse2);
+                _mm_storeh_pd(rho_.data() + (j+5)*N_ + k, sse2);
+                _mm_store_sd (rho_.data() + (j+6)*N_ + k, sse3);
+                _mm_storeh_pd(rho_.data() + (j+7)*N_ + k, sse3);
             }
         } // main column loop
 
@@ -302,12 +345,12 @@ public:
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[(N_ - 2)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
-                                     f1_*rho_half[(N_-2)*N_ + j]     +
-                                         rho_half[(N_-2)*N_ + j + 1] +
-                                         d_[N_-3] ) * c_rcp_[N_-2];
+            rho_[j*N_ + N_ - 2] = (    rho_half[(N_-2)*N_ + j - 1] +
+                                   f1_*rho_half[(N_-2)*N_ + j]     +
+                                       rho_half[(N_-2)*N_ + j + 1] +
+                                       d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
+                rho_[j*N_ + k] = d_[k] - c_[k]*rho_[j*N_ + k + 1];
             }
         } // remaining column loop
         } // OMP single region
@@ -315,10 +358,9 @@ public:
         #pragma omp single
         {
         n_step_++;
-        } // OMP single region
+        }
 
-        }  // while time < t_max
-
+        } // while time() < t_max
         } // OMP parallel region
     }
 
@@ -433,9 +475,9 @@ private:
     size_type N_, Ntot, n_step_, remainder_index_;
     value_type D_, dh_, dt_, fac_, f1_, f2_, rms_error_;
     std::vector<value_type> rho_, rho_half, c_, c_rcp_;
-   
-    static std::vector<value_type> d_; 
-    #pragma omp threadprivate(d_) 
+
+    static std::vector<value_type> d_;
+    #pragma omp threadprivate(d_)
 };
 
 std::vector<value_type> Diffusion2D::d_;
@@ -463,12 +505,12 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running OMP AVX_original_8 Simulations" << '\n';
+    std::cout << "Running OMP AVX_transposed_8 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
     value_type e_rms;
-    size_type n_runs = 1;
+    size_type n_runs = 100;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
@@ -522,7 +564,5 @@ int main(int argc, char* argv[])
     std::cout << "Total program execution time = " << hours << "h : " << minutes
               << "m : " << timing << "s\n" << std::endl;
 
-
     return 0;
 }
-
