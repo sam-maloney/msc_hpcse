@@ -65,11 +65,14 @@ public:
         __m256d f1_v  = _mm256_set1_pd( f1_  );
         __m256d c1_v  = _mm256_set1_pd(-c_[1]);
 
+        #pragma omp parallel
+        {
+
         while( time() < t_max ) {
 
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and preparation for AVX
-        #pragma omp parallel for nowait
+        #pragma omp for nowait
         for(size_type i = 1; i < N_-8; i += 8) {
             /// First is the forward sweep in x direction
             value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
@@ -174,7 +177,7 @@ public:
         } // main row loop
 
         /// Complete any remaining rows
-        #pragma omp parallel for
+        #pragma omp for
         for(size_type i = remainder_index_ ; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
             d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
@@ -195,7 +198,7 @@ public:
 
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
-        #pragma omp parallel for nowait
+        #pragma omp for nowait
         for(size_type j = 1; j < N_-8; j += 8) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
@@ -286,7 +289,7 @@ public:
         } // main column loop
 
         /// Complete any remaining columns
-        #pragma omp parallel for
+        #pragma omp for nowait
         for(size_type j = remainder_index_ ; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
             d_[1] = c1*(rho_half[N_ + j - 1] + f1_*rho_half[N_ + j]) +
@@ -305,9 +308,14 @@ public:
             }
         } // remaining column loop
 
+        #pragma omp single
+        {
         n_step_++;
+        } // OMP single region
 
         }  // while time < t_max
+
+        } // OMP parallel region
     }
 
     void write_density(std::string const& filename) const
@@ -458,7 +466,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running OMP combined_all Simulations" << '\n';
+    std::cout << "Running OMP separate_all Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;

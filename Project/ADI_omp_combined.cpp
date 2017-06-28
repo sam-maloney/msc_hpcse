@@ -174,7 +174,6 @@ public:
         } // main row loop
 
         /// Complete any remaining rows
-        #pragma omp parallel for
         for(size_type i = remainder_index_ ; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
             d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
@@ -286,7 +285,6 @@ public:
         } // main column loop
 
         /// Complete any remaining columns
-        #pragma omp parallel for
         for(size_type j = remainder_index_ ; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
             d_[1] = c1*(rho_half[N_ + j - 1] + f1_*rho_half[N_ + j]) +
@@ -458,7 +456,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running OMP combined_all Simulations" << '\n';
+    std::cout << "Running OMP combined Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;

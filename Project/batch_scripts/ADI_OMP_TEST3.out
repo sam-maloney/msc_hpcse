@@ -30,6 +30,7 @@ RMS Error of final run = 0.000693332
 Minimum Cycles over 100 runs = 8211621882
 Total program execution time = 0h : 5m : 20.7855s
 
+
 OMP_NUM_THREADS = 6
 Running OMP AVX_original_8 Simulations
 N = 98	dt = 5e-07
@@ -60,6 +61,7 @@ N = 98	dt = 5e-07
 RMS Error of final run = 0.000693332
 Minimum Cycles over 100 runs = 8555157683
 Total program execution time = 0h : 5m : 31.2879s
+
 
 OMP_NUM_THREADS = 4
 Running OMP AVX_original_8 Simulations
@@ -92,6 +94,7 @@ RMS Error of final run = 0.000693332
 Minimum Cycles over 100 runs = 10277608816
 Total program execution time = 0h : 6m : 35.9644s
 
+
 OMP_NUM_THREADS = 3
 Running OMP AVX_original_8 Simulations
 N = 98	dt = 5e-07
@@ -123,6 +126,7 @@ RMS Error of final run = 0.000693332
 Minimum Cycles over 100 runs = 11504924508
 Total program execution time = 0h : 7m : 23.4357s
 
+
 OMP_NUM_THREADS = 2
 Running OMP AVX_original_8 Simulations
 N = 98	dt = 5e-07
@@ -144,8 +148,45 @@ Total program execution time = 0h : 14m : 19.912s
 
 Running OMP Scalar_original_8 Simulations
 N = 98	dt = 5e-07
-slurmstepd: error: *** STEP 2140613.23 ON nid03202 CANCELLED AT 2017-06-27T23:31:58 DUE TO TIME LIMIT ***
-slurmstepd: error: *** JOB 2140613 ON nid03202 CANCELLED AT 2017-06-27T23:31:58 DUE TO TIME LIMIT ***
-srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
-srun: got SIGCONT
-srun: forcing job termination
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 14498797304
+Total program execution time = 0h : 9m : 19.4301s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 13181703126
+Total program execution time = 0h : 8m : 28.7495s
+
+
+OMP_NUM_THREADS = 1
+Running OMP AVX_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 13117325742
+Total program execution time = 0h : 8m : 24.8866s
+
+Running OMP AVX_transposed_4 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 30854124609
+Total program execution time = 0h : 19m : 47.0962s
+
+Running OMP AVX_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 32023420260
+Total program execution time = 0h : 20m : 32.1807s
+
+Running OMP Scalar_original_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 15347769874
+Total program execution time = 0h : 9m : 50.5499s
+
+Running OMP Scalar_transposed_8 Simulations
+N = 98	dt = 5e-07
+RMS Error of final run = 0.000693332
+Minimum Cycles over 100 runs = 15330293366
+Total program execution time = 0h : 9m : 49.8097s
+
