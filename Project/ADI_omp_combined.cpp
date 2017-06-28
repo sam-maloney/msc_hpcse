@@ -69,7 +69,7 @@ public:
 
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and preparation for AVX
-        #pragma omp parallel for nowait
+        #pragma omp parallel for
         for(size_type i = 1; i < N_-8; i += 8) {
             /// First is the forward sweep in x direction
             value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
@@ -194,7 +194,7 @@ public:
 
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
-        #pragma omp parallel for nowait
+        #pragma omp parallel for
         for(size_type j = 1; j < N_-8; j += 8) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;

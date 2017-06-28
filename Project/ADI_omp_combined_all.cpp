@@ -39,7 +39,7 @@ public:
         f1_ = 1/fac_ - 2;
         f2_ = 1+2*fac_;
 
-        rho_.resize(Ntot + 2*N_, 0.0);
+        rho_.resize(Ntot, 0.0);
         rho_half.resize(Ntot, 0.0);
 
         c_.resize(N_, 0.0);
@@ -51,7 +51,7 @@ public:
         }
 
         n_step_ = 0;
-        remainder_index_ = N_ - (N_ % 8);
+        remainder_index_ = (N_-1) - ((N_-2) % 8);
 
         initialize_density();
         initialize_thomas();
@@ -70,7 +70,7 @@ public:
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and preparation for AVX
         #pragma omp parallel for
-        for(size_type i = 1; i < N_-6; i += 8) {
+        for(size_type i = 1; i < N_-8; i += 8) {
             /// First is the forward sweep in x direction
             value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
 
@@ -84,13 +84,13 @@ public:
             tmp7 = rho_[(i+7)*N_ + 1];
 
             d_[8 ] = c1*(rho_[(i-1)*N_ + 1] + f1_*tmp0) + c1*tmp1;
-            d_[9 ] = c1*(tmp0 + f1_*tmp1) + c1*tmp2;
-            d_[10] = c1*(tmp1 + f1_*tmp2) + c1*tmp3;
-            d_[11] = c1*(tmp2 + f1_*tmp3) + c1*tmp4;
-            d_[12] = c1*(tmp3 + f1_*tmp4) + c1*tmp5;
-            d_[13] = c1*(tmp4 + f1_*tmp5) + c1*tmp6;
-            d_[14] = c1*(tmp5 + f1_*tmp6) + c1*tmp7;
-            d_[15] = c1*(tmp6 + f1_*tmp7) + c1*rho_[(i+8)*N_ + 1];
+            d_[9 ] = c1*(tmp0               + f1_*tmp1) + c1*tmp2;
+            d_[10] = c1*(tmp1               + f1_*tmp2) + c1*tmp3;
+            d_[11] = c1*(tmp2               + f1_*tmp3) + c1*tmp4;
+            d_[12] = c1*(tmp3               + f1_*tmp4) + c1*tmp5;
+            d_[13] = c1*(tmp4               + f1_*tmp5) + c1*tmp6;
+            d_[14] = c1*(tmp5               + f1_*tmp6) + c1*tmp7;
+            d_[15] = c1*(tmp6               + f1_*tmp7) + c1*rho_[(i+8)*N_ + 1];
 
             for(size_type k = 2; k < N_-2; k++) {
                 value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
@@ -134,48 +134,48 @@ public:
             tmp7 = rho_[(i+8)*N_ - 2];
             tmpf = c_rcp_[N_-2];
 
-            rho_half[(i  )*N_ - 2] = ( rho_[i*N_ - 2]  + f1_*tmp0 + tmp1 +
+            rho_half[(i+1)*N_ - 2] = ( rho_[i*N_ - 2]  + f1_*tmp0 + tmp1 +
                                        d_[8*N_ - 24] ) * tmpf;
-            rho_half[(i+1)*N_ - 2] = ( tmp0 + f1_*tmp1 + tmp2 +
+            rho_half[(i+2)*N_ - 2] = ( tmp0 + f1_*tmp1 + tmp2 +
                                        d_[8*N_ - 23] ) * tmpf;
-            rho_half[(i+2)*N_ - 2] = ( tmp1 + f1_*tmp2 + tmp3 +
+            rho_half[(i+3)*N_ - 2] = ( tmp1 + f1_*tmp2 + tmp3 +
                                        d_[8*N_ - 22] ) * tmpf;
-            rho_half[(i+3)*N_ - 2] = ( tmp2 + f1_*tmp3 + tmp4 +
+            rho_half[(i+4)*N_ - 2] = ( tmp2 + f1_*tmp3 + tmp4 +
                                        d_[8*N_ - 21] ) * tmpf;
-            rho_half[(i+4)*N_ - 2] = ( tmp3 + f1_*tmp4 + tmp5 +
+            rho_half[(i+5)*N_ - 2] = ( tmp3 + f1_*tmp4 + tmp5 +
                                        d_[8*N_ - 20] ) * tmpf;
-            rho_half[(i+5)*N_ - 2] = ( tmp4 + f1_*tmp5 + tmp6 +
+            rho_half[(i+6)*N_ - 2] = ( tmp4 + f1_*tmp5 + tmp6 +
                                        d_[8*N_ - 19] ) * tmpf;
-            rho_half[(i+6)*N_ - 2] = ( tmp5 + f1_*tmp6 + tmp7 +
+            rho_half[(i+7)*N_ - 2] = ( tmp5 + f1_*tmp6 + tmp7 +
                                        d_[8*N_ - 18] ) * tmpf;
-            rho_half[(i+7)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+9)*N_ - 2] +
+            rho_half[(i+8)*N_ - 2] = ( tmp6 + f1_*tmp7 + rho_[(i+9)*N_ - 2] +
                                        d_[8*N_ - 17] ) * tmpf;
 
             for(size_type k = N_-3; k > 0; k--) {
                 value_type tmpc = c_[k];
 
-                rho_half[(i-1)*N_ + k] = d_[k*8    ] -
-                                         tmpc*rho_half[(i-1)*N_ + k + 1];
-                rho_half[(i  )*N_ + k] = d_[k*8 + 1] -
+                rho_half[(i  )*N_ + k] = d_[k*8    ] -
                                          tmpc*rho_half[(i  )*N_ + k + 1];
-                rho_half[(i+1)*N_ + k] = d_[k*8 + 2] -
+                rho_half[(i+1)*N_ + k] = d_[k*8 + 1] -
                                          tmpc*rho_half[(i+1)*N_ + k + 1];
-                rho_half[(i+2)*N_ + k] = d_[k*8 + 3] -
+                rho_half[(i+2)*N_ + k] = d_[k*8 + 2] -
                                          tmpc*rho_half[(i+2)*N_ + k + 1];
-                rho_half[(i+3)*N_ + k] = d_[k*8 + 4] -
+                rho_half[(i+3)*N_ + k] = d_[k*8 + 3] -
                                          tmpc*rho_half[(i+3)*N_ + k + 1];
-                rho_half[(i+4)*N_ + k] = d_[k*8 + 5] -
+                rho_half[(i+4)*N_ + k] = d_[k*8 + 4] -
                                          tmpc*rho_half[(i+4)*N_ + k + 1];
-                rho_half[(i+5)*N_ + k] = d_[k*8 + 6] -
+                rho_half[(i+5)*N_ + k] = d_[k*8 + 5] -
                                          tmpc*rho_half[(i+5)*N_ + k + 1];
-                rho_half[(i+6)*N_ + k] = d_[k*8 + 7] -
+                rho_half[(i+6)*N_ + k] = d_[k*8 + 6] -
                                          tmpc*rho_half[(i+6)*N_ + k + 1];
+                rho_half[(i+7)*N_ + k] = d_[k*8 + 7] -
+                                         tmpc*rho_half[(i+7)*N_ + k + 1];
             }
         } // main row loop
 
         /// Complete any remaining rows
         #pragma omp parallel for
-        for(size_type i = remainder_index_ + 1; i < N_; ++i) {
+        for(size_type i = remainder_index_ ; i < N_-1; ++i) {
             /// First is the forward sweep in x direction
             d_[1] = c1*(rho_[(i-1)*N_ + 1] + f1_*rho_[i*N_ + 1]) +
                     c1*rho_[(i+1)*N_ + 1];
@@ -184,19 +184,19 @@ public:
                           rho_[(i+1)*N_ + k] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the half time step
-            rho_half[(i-1)*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
-                                           f1_*rho_[(i+1)*N_ - 2] +
-                                               rho_[(i+2)*N_ - 2] +
-                                               d_[N_-3] ) * c_rcp_[N_-2];
+            rho_half[i*N_ + N_ - 2] = (    rho_[(i  )*N_ - 2] +
+                                       f1_*rho_[(i+1)*N_ - 2] +
+                                           rho_[(i+2)*N_ - 2] +
+                                           d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_half[(i-1)*N_ + k] = d_[k] - c_[k]*rho_half[(i-1)*N_ + k + 1];
+                rho_half[i*N_ + k] = d_[k] - c_[k]*rho_half[i*N_ + k + 1];
             }
         } // remaining row loop
 
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
         #pragma omp parallel for
-        for(size_type j = 0; j < N_-7; j += 8) {
+        for(size_type j = 1; j < N_-8; j += 8) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
             __m256d rho_half1_lv, rho_half1_cv, rho_half1_rv;
@@ -267,8 +267,8 @@ public:
             tmp4_v    = _mm256_fmadd_pd(c_rcp_v, rho_half1_rv, d_pr1_v     );
             rho_pr1_v = _mm256_fmadd_pd(c_rcp_v, tmp3_v      , tmp4_v      );
 
-            _mm256_storeu_pd(rho_.data() + (N_-1)*N_ + j    , rho_pr0_v);
-            _mm256_storeu_pd(rho_.data() + (N_-1)*N_ + j + 4, rho_pr1_v);
+            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j    , rho_pr0_v);
+            _mm256_storeu_pd(rho_.data() + (N_-2)*N_ + j + 4, rho_pr1_v);
 
             for(size_type k = N_-3; k > 0; k--) {
                 __m256d c_v, d0_v, d1_v;
@@ -280,14 +280,14 @@ public:
 
                 rho_pr0_v = _mm256_fmadd_pd(c_v, rho_pr0_v, d0_v);
                 rho_pr1_v = _mm256_fmadd_pd(c_v, rho_pr1_v, d1_v);
-                _mm256_storeu_pd(rho_.data() + (k+1)*N_ + j    , rho_pr0_v);
-                _mm256_storeu_pd(rho_.data() + (k+1)*N_ + j + 4, rho_pr1_v);
+                _mm256_storeu_pd(rho_.data() + k*N_ + j    , rho_pr0_v);
+                _mm256_storeu_pd(rho_.data() + k*N_ + j + 4, rho_pr1_v);
             }
         } // main column loop
 
         /// Complete any remaining columns
         #pragma omp parallel for
-        for(size_type j = remainder_index_; j < N_-1; ++j) {
+        for(size_type j = remainder_index_ ; j < N_-1; ++j) {
             /// First is the forward sweep in y direction
             d_[1] = c1*(rho_half[N_ + j - 1] + f1_*rho_half[N_ + j]) +
                     c1*rho_half[N_ + j + 1];
@@ -296,12 +296,12 @@ public:
                           rho_half[k*N_ + j + 1] + d_[k-1] ) * c_rcp_[k];
             }
             /// Second is the back substitution for the full time step
-            rho_[(N_ - 1)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
+            rho_[(N_ - 2)*N_ + j] = (    rho_half[(N_-2)*N_ + j - 1] +
                                      f1_*rho_half[(N_-2)*N_ + j]     +
                                          rho_half[(N_-2)*N_ + j + 1] +
                                          d_[N_-3] ) * c_rcp_[N_-2];
             for(size_type k = N_-3; k > 0; k--) {
-                rho_[(k+1)*N_ + j] = d_[k] - c_[k]*rho_[(k + 2)*N_ + j];
+                rho_[k*N_ + j] = d_[k] - c_[k]*rho_[(k + 1)*N_ + j];
             }
         } // remaining column loop
 
@@ -314,24 +314,13 @@ public:
     {
         std::ofstream out_file(filename, std::ios::out);
 
-        for(size_type j = 0; j < N_; ++j) {
-            out_file << 0.0 << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
-        }
-
-        for(size_type i = 2; i < N_; ++i) {
-            out_file << ((i-1)*dh_) << '\t' << 0.0 << '\t' << 0.0 << "\n";
-            for(size_type j = 1; j < N_-1; ++j) {
-                out_file << ((i-1)*dh_) << '\t' << (j*dh_) << '\t'
+        for(size_type i = 0; i < N_; ++i) {
+            for(size_type j = 0; j < N_; ++j) {
+                out_file << (i*dh_) << '\t' << (j*dh_) << '\t'
                          << rho_[i*N_ + j] << "\n";
             }
-            out_file << ((i-1)*dh_) << '\t' << ((N_-1)*dh_) << '\t' << 0.0 << "\n";
             out_file << "\n";
         }
-
-        for(size_type j = 0; j < N_; ++j) {
-            out_file << ((N_-1)*dh_) << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
-        }
-
         out_file.close();
     }
 
@@ -346,15 +335,15 @@ public:
             out_file << 0.0 << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
         }
 
-        for(size_type i = 2; i < N_; ++i) {
-            out_file << ((i-1)*dh_) << '\t' << 0.0 << '\t' << 0.0 << "\n";
+        for(size_type i = 1; i < N_-1; ++i) {
+            out_file << (i*dh_) << '\t' << 0.0 << '\t' << 0.0 << "\n";
             for(size_type j = 1; j < N_-1; ++j) {
-                ref_value = sin(M_PI*(i-1)*dh_) * sin(M_PI*j*dh_) *
+                ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
                             exp(-2*D_*t_f*M_PI*M_PI);
-                out_file << ((i-1)*dh_) << '\t' << (j*dh_) << '\t'
+                out_file << (i*dh_) << '\t' << (j*dh_) << '\t'
                          << ref_value << "\n";
             }
-            out_file << ((i-1)*dh_) << '\t' << ((N_-1)*dh_) << '\t' << 0.0 << "\n";
+            out_file << (i*dh_) << '\t' << ((N_-1)*dh_) << '\t' << 0.0 << "\n";
             out_file << "\n";
         }
 
@@ -370,9 +359,9 @@ public:
         rms_error_ = 0.0;
         value_type t_f = time();
 
-        for(size_type i = 2; i < N_; i++) {
-            for(size_type j = 1; j < N_-1; j++) {
-                value_type ref_value = sin(M_PI*(i-1)*dh_) * sin(M_PI*j*dh_) *
+        for(size_type i = 0; i < N_; i++) {
+            for(size_type j = 0; j < N_; j++) {
+                value_type ref_value = sin(M_PI*i*dh_) * sin(M_PI*j*dh_) *
                                        exp(-2*D_*t_f*M_PI*M_PI);
                 rms_error_ += pow(rho_[i*N_ + j] - ref_value, 2);
             }
@@ -413,9 +402,9 @@ private:
     void initialize_density()
     {
         /// initialize rho(x,y,t=0) = sin(pi*x)*sin(pi*y)
-        for (size_type i = 2; i < N_; ++i) {
+        for (size_type i = 1; i < N_-1; ++i) {
             for (size_type j = 1; j < N_-1; ++j) {
-                rho_[i*N_ + j] = sin(M_PI*(i-1)*dh_) * sin(M_PI*j*dh_);
+                rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
             }
         }
     }
