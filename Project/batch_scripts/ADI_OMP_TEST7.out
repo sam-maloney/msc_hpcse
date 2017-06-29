@@ -1,0 +1,197 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+********** Affinity = compact **********
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5977611952
+Total program execution time = 0h : 4m : 0.456776s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5788678040
+Total program execution time = 0h : 3m : 50.5341s
+
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 7363520623
+Total program execution time = 0h : 4m : 43.3104s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 7302422366
+Total program execution time = 0h : 4m : 40.9552s
+
+
+OMP_NUM_THREADS = 4
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 8462611939
+Total program execution time = 0h : 5m : 27.2768s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 8694834555
+Total program execution time = 0h : 5m : 34.8554s
+
+
+OMP_NUM_THREADS = 3
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 9238264244
+Total program execution time = 0h : 5m : 57.8631s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 9678754855
+Total program execution time = 0h : 6m : 15.1233s
+
+
+OMP_NUM_THREADS = 2
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 10938046854
+Total program execution time = 0h : 7m : 0.873991s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 11361466454
+Total program execution time = 0h : 7m : 17.32s
+
+
+OMP_NUM_THREADS = 1
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 10726788956
+Total program execution time = 0h : 6m : 52.7847s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 11693254456
+Total program execution time = 0h : 7m : 30.0117s
+
+
+
+********** Affinity = scatter **********
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5712484093
+Total program execution time = 0h : 3m : 52.9418s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5452588978
+Total program execution time = 0h : 3m : 40.1195s
+
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5937863857
+Total program execution time = 0h : 3m : 59.2703s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5805884142
+Total program execution time = 0h : 3m : 52.7536s
+
+
+OMP_NUM_THREADS = 4
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 6858516300
+Total program execution time = 0h : 4m : 23.9344s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 6846648401
+Total program execution time = 0h : 4m : 23.5694s
+
+
+OMP_NUM_THREADS = 3
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 7767834485
+Total program execution time = 0h : 4m : 58.8577s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 7941520395
+Total program execution time = 0h : 5m : 5.50845s
+
+
+OMP_NUM_THREADS = 2
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 8974731119
+Total program execution time = 0h : 5m : 46.0709s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 9294340949
+Total program execution time = 0h : 5m : 57.9566s
+
+
+OMP_NUM_THREADS = 1
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 10557797525
+Total program execution time = 0h : 6m : 46.2021s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 11436449382
+Total program execution time = 0h : 7m : 20.0209s
+
