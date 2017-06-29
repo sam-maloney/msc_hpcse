@@ -9,41 +9,69 @@
 #SBATCH --partition=normal
 #SBATCH --constraint=gpu
 
-echo ********** Affinity not set **********
+export KMP_AFFINITY=compact
+echo "********** Affinity = compact **********"
 echo
 export OMP_NUM_THREADS=12
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
 export OMP_NUM_THREADS=6
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
 export OMP_NUM_THREADS=4
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
 export OMP_NUM_THREADS=3
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
 export OMP_NUM_THREADS=2
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
 export OMP_NUM_THREADS=1
 echo OMP_NUM_THREADS = $OMP_NUM_THREADS
-./ADI_omp_combined.exe 1 98 0.0000005 100
-./ADI_omp_combined_all.exe 1 98 0.0000005 100
-./ADI_omp_separate.exe 1 98 0.0000005 100
-./ADI_omp_separate_all.exe 1 98 0.0000005 100
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+echo
+export KMP_AFFINITY=scatter
+echo "********** Affinity = scatter **********"
+echo
+export OMP_NUM_THREADS=12
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+export OMP_NUM_THREADS=6
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+export OMP_NUM_THREADS=4
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+export OMP_NUM_THREADS=3
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+export OMP_NUM_THREADS=2
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100
+echo
+export OMP_NUM_THREADS=1
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun Project/ADI_omp_aligned_combined.exe 1 96 0.0000005 100
+srun Project/ADI_omp_aligned_separate.exe 1 96 0.0000005 100

@@ -1,0 +1,22 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+********** Affinity = compact **********
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5977611952
+Total program execution time = 0h : 4m : 0.456776s
+
+Running OMP aligned_separate Simulations
+N = 96	dt = 5e-07
+RMS Error of final run = 0.000610434
+At a final time = 0.1
+Minimum Cycles over 100 runs = 5788678040
+Total program execution time = 0h : 3m : 50.5341s
+
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_combined Simulations
+N = 96	dt = 5e-07

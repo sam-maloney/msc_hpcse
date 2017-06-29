@@ -70,14 +70,11 @@ public:
         __m256d f1_v  = _mm256_set1_pd( f1_  );
         __m256d c1_v  = _mm256_set1_pd(-c_[1]);
 
-        #pragma omp parallel
-        {  
-
         while( time() < t_max ) {
 
         /// For each row, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and preparation for AVX
-        #pragma omp for
+        #pragma omp parallel for
         for(size_type i = 1; i < N_-6; i += 8) {
             /// First is the forward sweep in x direction
             value_type tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, tmpf;
@@ -183,7 +180,7 @@ public:
 
         /// For each column, apply Thomas algorithm for implicit solution
         /// Loop unrolled by 8 for data reuse and AVX
-        #pragma omp for nowait
+        #pragma omp parallel for
         for(size_type j = 0; j < N_-7; j += 8) {
             /// First is the forward sweep in y direction
             __m256d rho_half0_lv, rho_half0_cv, rho_half0_rv;
@@ -273,13 +270,9 @@ public:
             }
         } // main column loop
 
-        #pragma omp single
-        {
         n_step_++;
-        }
 
         }  // while time < t_max
-        } // OMP prallel region
     }
 
     void write_density(std::string const& filename) const
@@ -448,7 +441,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running OMP aligned_separate Simulations" << '\n';
+    std::cout << "Running OMP aligned_combined Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
