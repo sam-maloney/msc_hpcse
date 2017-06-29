@@ -32,9 +32,6 @@
 #include "mkl_vsl.h"
 #include "errcheck.inc"
 
-#define SEED    1
-#define BRNG    VSL_BRNG_MCG31
-#define METHOD  VSL_RNG_METHOD_BINOMIAL_BTPE
 #define N       1000
 #define NN      10
 
@@ -53,11 +50,11 @@ int main()
     double DeltaM,DeltaD;
 
     /***** Initialize *****/
-    errcode = vslNewStream( &stream, BRNG,  SEED );
+    errcode = vslNewStream( &stream, VSL_BRNG_MCG31, 1 );
     CheckVslError( errcode );
 
     /***** Call RNG *****/
-    errcode = viRngBinomial( METHOD, stream, N, r, ntrial, p );
+    errcode = viRngBinomial( VSL_RNG_METHOD_BINOMIAL_BTPE, stream, N, r, ntrial, p );
     CheckVslError( errcode );
 
     /***** Theoretical moments *****/

@@ -71,7 +71,7 @@ public:
         __m256d c1_v  = _mm256_set1_pd(-c_[1]);
 
         #pragma omp parallel
-        {  
+        {
 
         while( time() < t_max ) {
 
@@ -508,7 +508,5 @@ int main(int argc, char* argv[])
     std::cout << "Total program execution time = " << hours << "h : " << minutes
               << "m : " << timing << "s\n" << std::endl;
 
-
     return 0;
 }
-

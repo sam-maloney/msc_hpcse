@@ -1,5 +1,5 @@
 ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
-ADI_AVX.cpp ADI_AVX.exe ADI_omp_combined_all.exe ADI_omp_combined.cpp ADI_omp_combined.exe ADI_omp.cpp ADI_omp_separate_all.cpp ADI_omp_separate_all.exe ADI_omp_separate.cpp ADI_omp_separate.exe ADI_OMP_TEST ADI_scalar.cpp ADI_scalar.exe ADI_serial.cpp ADI_serial.exe batch_scripts craypat Makefile old_code OVS plot_data.m prng_engine.hpp RW_scalar.cpp RW_serial.cpp single_run_ADI.cpp single_run_RW.cpp slurm-2147254.out Solutions timer.hpp tsc_x86.hpp Affinity not set ADI_AVX.cpp ADI_AVX.exe ADI_omp_combined_all.exe ADI_omp_combined.cpp ADI_omp_combined.exe ADI_omp.cpp ADI_omp_separate_all.cpp ADI_omp_separate_all.exe ADI_omp_separate.cpp ADI_omp_separate.exe ADI_OMP_TEST ADI_scalar.cpp ADI_scalar.exe ADI_serial.cpp ADI_serial.exe batch_scripts craypat Makefile old_code OVS plot_data.m prng_engine.hpp RW_scalar.cpp RW_serial.cpp single_run_ADI.cpp single_run_RW.cpp slurm-2147254.out Solutions timer.hpp tsc_x86.hpp
+Affinity not set
 
 OMP_NUM_THREADS = 12
 Running OMP combined Simulations

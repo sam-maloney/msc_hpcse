@@ -33,8 +33,8 @@ subplot(2,2,2);
 h2 = loglog(M,rms,'b.-');
 xlabel('M');
 ylabel('RMS Error');
-xlim([min(M) max(M)]);
-set(gca,'XTick',[10000 100000 1000000 10000000]);
+xlim([min(M) 1000000000]);
+set(gca,'XTick',[1000 100000 10000000 1000000000]);
 title('Number of Particles');
 
 subplot(2,2,4);
@@ -42,10 +42,10 @@ p = (log(rms(1:end-1)) - log(rms(2:end)))./(log(M(2:end)) - log(M(1:end-1)));
 h4 = semilogx(M(2:end),p,'b.-');
 xlabel('M');
 ylabel('Order of Accuracy');
-xlim([min(M) max(M)]);
-set(gca,'XTick',[10000 100000 1000000 10000000]);
-ylim([0 4]);
-% line([min(M) max(M)],[2 2],'Color','black','LineStyle',':');
+xlim([min(M) 1000000000]);
+set(gca,'XTick',[1000 100000 10000000 1000000000]);
+ylim([0 1]);
+line([min(M) max(M)],[0.5 0.5],'Color','black','LineStyle',':');
 
 
 % data = load('OVS_ADI_dh.dat','-ascii');

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <random>
 #include <cstdint>
+#include <mkl_vsl.h>
 
 #include "timer.hpp"
 #include "prng_engine.hpp" // Sitmo PRNG
@@ -35,6 +36,8 @@ public:
     : D_(D), N_(N), Ntot(N_*N_), M_(M), dt_(dt)
     {
         prng_eng.seed(0);
+
+        vslNewStream(&stream, VSL_BRNG_SFMT19937, 7777777);
 
         /// real space grid spacing
         dh_ = 1.0 / (N_ - 1);
@@ -215,6 +218,8 @@ private:
     std::vector<value_type> rho_;
     std::vector<particle_type> m_, m_tmp;
 
+    VSLStreamStatePtr stream;
+
     sitmo::prng_engine prng_eng;
 };
 
@@ -297,7 +302,7 @@ int main(int argc, char* argv[])
 
         if ( i == n_runs-1 ) {
             final_time = system.time();
-            system.write_density("Solutions/RW_scalar.dat");
+            system.write_density("Solutions/RW_AVX.dat");
             system.write_reference("Solutions/RW_ref.dat");
         }
     }
