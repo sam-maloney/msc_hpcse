@@ -4,14 +4,11 @@
 #include <vector>
 #include <cmath>
 #include <x86intrin.h>
+#include "timer.hpp"
 
 /// Select which runtime measure to use
 //#define USE_TIMER
 #define USE_TSC
-
-//#ifdef USE_TIMER
-#include "timer.hpp"
-//#endif // USE_TIMER
 
 #ifdef USE_TSC
 #include "tsc_x86.hpp"

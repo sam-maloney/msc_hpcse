@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdint>
 #include <mkl_vsl.h>
+#include <x86intrin.h>
 #include "timer.hpp"
 
 /// Select which runtime measure to use
@@ -59,19 +60,143 @@ public:
         initialize_density();
     }
 
+    ~Diffusion2D()
+    {
+        vslDeleteStream(&stream);
+    }
+
     void run_simulation(value_type t_max)
     {
         while ( time() < t_max )
         {
 
         m_tmp = m_;
-        int r[4];
+        int r[32] = {0};
 
         /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
-            for(size_type j = 1; j < N_-1; ++j) {
+            size_type j;
+            for(j = 1; j < N_-4; j += 4) {
+                __m128i r0_v, r1_v, r2_v, r3_v, r4_v, r5_v, r6_v, r7_v;
+                __m128i mc_v, ml_v, mr_v, mu_v, md_v, t0_v, t1_v, t2_v;
+                __m128 tmp0_v, tmp1_v, tmp2_v, tmp3_v;
+
+                mc_v = _mm_loadu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j    ));
+                mu_v = _mm_loadu_si128((__m128i*)(m_tmp.data() + (i-1)*N_ + j    ));
+                md_v = _mm_loadu_si128((__m128i*)(m_tmp.data() + (i+1)*N_ + j    ));
+
+                if ( m_[i*N_ + j] > 0 ) {   
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r    , m_[i*N_ + j    ], lambda_);
+                    r0_v = _mm_loadu_si128((__m128i*)r);
+
+//                    m_tmp[(i  )*N_ + j - 1] += r[0];
+//                    m_tmp[(i  )*N_ + j + 1] += r[1];
+//                    m_tmp[(i-1)*N_ + j    ] += r[2];
+//                    m_tmp[(i+1)*N_ + j    ] += r[3];
+//                    m_tmp[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+                } else {
+                    r0_v = _mm_setzero_si128();
+                }
+                    
+                if ( m_[i*N_ + j + 1] > 0 ) {   
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4, m_[i*N_ + j + 1], lambda_);
+                    r1_v = _mm_loadu_si128((__m128i*)(r+4));
+
+//                    m_tmp[(i  )*N_ + j    ] += r[4];
+//                    m_tmp[(i  )*N_ + j + 2] += r[5];
+//                    m_tmp[(i-1)*N_ + j + 1] += r[6];
+//                    m_tmp[(i+1)*N_ + j + 1] += r[7];
+//                    m_tmp[(i  )*N_ + j + 1] -= (r[4] + r[5] + r[6] + r[7]);
+                } else {
+                    r1_v = _mm_setzero_si128();
+                }
+
+                if ( m_[i*N_ + j + 2] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8, m_[i*N_ + j + 2], lambda_);
+                    r2_v = _mm_loadu_si128((__m128i*)(r+8));
+
+//                    m_tmp[(i  )*N_ + j + 1] += r[8 ];
+//                    m_tmp[(i  )*N_ + j + 3] += r[9 ];
+//                    m_tmp[(i-1)*N_ + j + 2] += r[10];
+//                    m_tmp[(i+1)*N_ + j + 2] += r[11];
+//                    m_tmp[(i  )*N_ + j + 2] -= (r[8] + r[9] + r[10] + r[11]);
+                } else {
+                    r2_v = _mm_setzero_si128();
+                }
+
+                if ( m_[i*N_ + j + 3] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[i*N_ + j + 3], lambda_);
+                    r3_v = _mm_loadu_si128((__m128i*)(r+12));
+                
+
+//                    m_tmp[(i  )*N_ + j + 2] += r[12];
+//                    m_tmp[(i  )*N_ + j + 4] += r[13];
+//                    m_tmp[(i-1)*N_ + j + 3] += r[14];
+//                    m_tmp[(i+1)*N_ + j + 3] += r[15];
+//                    m_tmp[(i  )*N_ + j + 3] -= (r[12] + r[13] + r[14] + r[15]);
+                } else {
+                    r3_v = _mm_setzero_si128();
+                }
+
+                tmp0_v = _mm_castsi128_ps( _mm_unpacklo_epi32(r0_v, r1_v) );
+                tmp1_v = _mm_castsi128_ps( _mm_unpacklo_epi32(r2_v, r3_v) );
+                tmp2_v = _mm_castsi128_ps( _mm_unpackhi_epi32(r0_v, r1_v) );
+                tmp3_v = _mm_castsi128_ps( _mm_unpackhi_epi32(r2_v, r3_v) );
+                r0_v = _mm_castps_si128( _mm_movelh_ps(tmp0_v, tmp1_v) );
+                r1_v = _mm_castps_si128( _mm_movehl_ps(tmp1_v, tmp0_v) );
+                r2_v = _mm_castps_si128( _mm_movelh_ps(tmp2_v, tmp3_v) );
+                r3_v = _mm_castps_si128( _mm_movehl_ps(tmp3_v, tmp2_v) );
+
+                t0_v = _mm_add_epi32(r0_v, r1_v);
+                t1_v = _mm_add_epi32(r2_v, r3_v);
+                t2_v = _mm_add_epi32(t0_v, t1_v);
+
+                mc_v = _mm_sub_epi32(mc_v, t2_v);
+                _mm_storeu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j    ), mc_v);
+                
+                ml_v = _mm_loadu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j - 1));
+                ml_v = _mm_add_epi32(ml_v, r0_v);
+                _mm_storeu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j - 1), ml_v);
+                
+                mr_v = _mm_loadu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j + 1));
+                mr_v = _mm_add_epi32(mr_v, r1_v);
+                mu_v = _mm_add_epi32(mu_v, r2_v);
+                md_v = _mm_add_epi32(md_v, r3_v);
+
+                _mm_storeu_si128((__m128i*)(m_tmp.data() + (i  )*N_ + j + 1), mr_v);
+                _mm_storeu_si128((__m128i*)(m_tmp.data() + (i-1)*N_ + j    ), mu_v);
+                _mm_storeu_si128((__m128i*)(m_tmp.data() + (i+1)*N_ + j    ), md_v);
+
+
+//                    m_tmp[(i  )*N_ + j + 3] += r[16];
+//                    m_tmp[(i  )*N_ + j + 5] += r[17];
+//                    m_tmp[(i-1)*N_ + j + 4] += r[18];
+//                    m_tmp[(i+1)*N_ + j + 4] += r[19];
+//                    m_tmp[(i  )*N_ + j + 4] -= (r[16] + r[17] + r[18] + r[19]);
+//                    
+//                    m_tmp[(i  )*N_ + j + 4] += r[20];
+//                    m_tmp[(i  )*N_ + j + 6] += r[21];
+//                    m_tmp[(i-1)*N_ + j + 5] += r[22];
+//                    m_tmp[(i+1)*N_ + j + 5] += r[23];
+//                    m_tmp[(i  )*N_ + j + 5] -= (r[20] + r[21] + r[22] + r[23]);
+//                    
+//                    m_tmp[(i  )*N_ + j + 5] += r[24];
+//                    m_tmp[(i  )*N_ + j + 7] += r[25];
+//                    m_tmp[(i-1)*N_ + j + 6] += r[26];
+//                    m_tmp[(i+1)*N_ + j + 6] += r[27];
+//                    m_tmp[(i  )*N_ + j + 6] -= (r[24] + r[25] + r[26] + r[27]);
+//                    
+//                    m_tmp[(i  )*N_ + j + 6] += r[28];
+//                    m_tmp[(i  )*N_ + j + 8] += r[29];
+//                    m_tmp[(i-1)*N_ + j + 7] += r[30];
+//                    m_tmp[(i+1)*N_ + j + 7] += r[31];
+//                    m_tmp[(i  )*N_ + j + 7] -= (r[28] + r[29] + r[30] + r[31]);
+            }
+
+            for(; j < N_-1; ++j) {
                 if ( m_[i*N_ + j] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[i*N_ + j], lambda_);
+                    
                     m_tmp[(i  )*N_ + j - 1] += r[0];
                     m_tmp[(i  )*N_ + j + 1] += r[1];
                     m_tmp[(i-1)*N_ + j    ] += r[2];
@@ -228,9 +353,9 @@ int main(int argc, char* argv[])
     const M_type     M  = std::stoul(argv[3]);
     const value_type dt = std::stod (argv[4]);
 
-//    if ( N % 8 != 0 ) {
-//        N += 8 - (N % 8);
-//        std::cout << "N must be a multiple of 8 to prevent false sharing. Using N = "
+//    if ( (N-2) % 8 != 0 ) {
+//        N += 8 - ((N-2) % 8);
+//        std::cout << "(N-2) must be a multiple of 8 for AVX. Using N = "
 //                  << N << " instead." << '\n';
 //    }
 
@@ -285,7 +410,7 @@ int main(int argc, char* argv[])
         system.compute_rms_error();
         e_rms = system.rms_error();
 
-        if ( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+        if ( (e_rms < 0.1) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
             min_cycles = cycles;
         }
 
