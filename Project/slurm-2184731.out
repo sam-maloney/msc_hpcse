@@ -1,0 +1,73 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+Running RW Scalar Simulations
+N = 98	dt = 1e-05	M = 1000000
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+Actual # of particles = 999852
+RMS Error of final run = 0.0155058
+At a final time = 0.1
+Minimum Cycles over 20 runs = 67039503116
+Total program execution time = 0h : 8m : 35.7853s
+
+Running RW Scalar Simulations
+N = 98	dt = 1e-05	M = 1000000
+Actual initial # of particles = 999852
+Actual  final  # of particles = 927030
+RMS Error of final run = 0.0324621
+At a final time = 0.1
+Minimum Cycles over 20 runs = 64836243764
+Total program execution time = 0h : 8m : 18.8938s
+
+Running RW Scalar Simulations
+N = 50	dt = 1e-05	M = 1000000
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+Actual # of particles = 999292
+RMS Error of final run = 0.00729769
+At a final time = 0.1
+Minimum Cycles over 20 runs = 17544697650
+Total program execution time = 0h : 2m : 15.0054s
+
+Running RW Scalar Simulations
+N = 50	dt = 1e-05	M = 1000000
+Actual initial # of particles = 999292
+Actual  final  # of particles = 989255
+RMS Error of final run = 0.0173674
+At a final time = 0.1
+Minimum Cycles over 20 runs = 17518850131
+Total program execution time = 0h : 2m : 14.8166s
+

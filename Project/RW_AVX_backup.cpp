@@ -2,10 +2,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
-#include <algorithm>
 #include <cmath>
 #include <cstdint>
-#include <cstdlib>
 #include <mkl_vsl.h>
 #include <x86intrin.h>
 #include "timer.hpp"
@@ -32,11 +30,10 @@ public:
     Diffusion2D(const value_type D,
                 const size_type N,
                 const M_type M,
-                const value_type dt,
-                const size_type seed)
+                const value_type dt)
     : D_(D), N_(N), Ntot(N_*N_), M_(M), dt_(dt)
     {
-        vslNewStream(&stream, VSL_BRNG_SFMT19937, seed);
+        vslNewStream(&stream, VSL_BRNG_SFMT19937, 7777777);
 
         /// real space grid spacing
         dh_ = 1.0 / (N_ - 1);
@@ -60,7 +57,7 @@ public:
 
         n_step_ = 0;
 
-        M_real_ = initialize_density();
+        initialize_density();
     }
 
     ~Diffusion2D()
@@ -81,14 +78,14 @@ public:
         /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
             size_type j;
-            for(j = 1; j < N_-6; j += 6) {
-                __m256i mc_v, mu_v, md_v, t0_v, t1_v, t2_v;
+            for(j = 1; j < N_-8; j += 8) {
+                __m256i mc_v, ml_v, mr_v, mu_v, md_v, t0_v, t1_v, t2_v;
                 __m256i row0_v, row1_v, row2_v, row3_v;
                 __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v, tmp4_v, tmp5_v, tmp6_v, tmp7_v;
 
-                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1));
-                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j - 1));
-                md_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j - 1));
+                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j    ));
+                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j    ));
+                md_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j    ));
 
                 if ( m_[i*N_ + j    ] > 0 ) {   
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[i*N_ + j    ], lambda_);
@@ -103,15 +100,15 @@ public:
                 }
 
                 if ( m_[i*N_ + j + 2] > 0 ) {
-                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[i*N_ + j + 2], lambda_);
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 16, m_[i*N_ + j + 2], lambda_);
                 } else {
-                    _mm_storeu_si128((__m128i*)(r+17), zero_v);
+                    _mm_storeu_si128((__m128i*)(r+16), zero_v);
                 }
 
                 if ( m_[i*N_ + j + 3] > 0 ) {
-                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[i*N_ + j + 3], lambda_);
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 24, m_[i*N_ + j + 3], lambda_);
                 } else {
-                    _mm_storeu_si128((__m128i*)(r+27), zero_v);
+                    _mm_storeu_si128((__m128i*)(r+24), zero_v);
                 }
 
                 if ( m_[i*N_ + j + 4] > 0 ) {   
@@ -126,37 +123,53 @@ public:
                     _mm_storeu_si128((__m128i*)(r+12), zero_v);
                 }
 
+                if ( m_[i*N_ + j + 6] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 20, m_[i*N_ + j + 6], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+20), zero_v);
+                }
+
+                if ( m_[i*N_ + j + 7] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 28, m_[i*N_ + j + 7], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+28), zero_v);
+                }
+
                 row0_v = _mm256_loadu_si256((__m256i*)(r   ));
                 row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
                 row2_v = _mm256_loadu_si256((__m256i*)(r+16));
                 row3_v = _mm256_loadu_si256((__m256i*)(r+24));
 
-                tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
-                tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
-                tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
-                tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
+                tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0x44);
+                tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xEE);
+                tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0x44);
+                tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xEE);
                 
-                row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
-                row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
-                row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
-                row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+                row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0x88) );
+                row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+                row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp1_v, tmp3_v, 0x88) );
+                row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp1_v, tmp3_v, 0xDD) );
 
-//                t0_v = _mm256_add_epi32(row1_v, row1_v);
-//                t1_v = _mm256_add_epi32(row2_v, row2_v);
-//                t2_v = _mm256_add_epi32(t0_v, t1_v);
+                t0_v = _mm256_add_epi32(row0_v, row1_v);
+                t1_v = _mm256_add_epi32(row2_v, row3_v);
+                t2_v = _mm256_add_epi32(t0_v, t1_v);
 
-                t2_v = _mm256_slli_epi32(row1_v, 2);
-
-                mu_v = _mm256_add_epi32(mu_v, row1_v);
-                md_v = _mm256_add_epi32(md_v, row2_v);
-                mc_v = _mm256_add_epi32(mc_v, row0_v);
-                mc_v = _mm256_add_epi32(mc_v, row3_v);
                 mc_v = _mm256_sub_epi32(mc_v, t2_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j    ), mc_v);
+                
+                ml_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1));
+                ml_v = _mm256_add_epi32(ml_v, row0_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1), ml_v);
+                
+                mr_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j + 1));
+                mr_v = _mm256_add_epi32(mr_v, row1_v);
+                mu_v = _mm256_add_epi32(mu_v, row2_v);
+                md_v = _mm256_add_epi32(md_v, row3_v);
 
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1), mc_v);
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j - 1), mu_v);
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j - 1), md_v);
-            } // main column loop
+                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j + 1), mr_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j    ), mu_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j    ), md_v);
+            }
 
             for(; j < N_-1; ++j) {
                 if ( m_[i*N_ + j] > 0 ) {
@@ -168,8 +181,8 @@ public:
                     m_tmp[(i+1)*N_ + j    ] += r[3];
                     m_tmp[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
                 }
-            } //remaining column loop
-        } // main row loop
+            }
+        }
 
         m_.swap(m_tmp);
         n_step_++;
@@ -185,19 +198,6 @@ public:
                                                         (fac_*dh_*dh_);
             }
         }
-    }
-
-    M_type compute_num_particles()
-    {
-        M_type n_particles = 0;
-
-        for(size_type i = 0; i < N_; ++i) {
-            for(size_type j = 0; j < N_; ++j) {
-                n_particles += m_[i*N_ + j];
-            }
-        }
-
-        return n_particles;
     }
 
     void write_density(std::string const& filename) const
@@ -217,6 +217,7 @@ public:
     void write_reference(std::string const& filename)
     {
         std::ofstream out_file(filename, std::ios::out);
+
         value_type ref_value, t_f;
         t_f = time();
 
@@ -239,6 +240,7 @@ public:
         for(size_type j = 0; j < N_; ++j) {
             out_file << ((N_-1)*dh_) << '\t' << (j*dh_) << '\t' << 0.0 << "\n";
         }
+
         out_file.close();
     }
 
@@ -256,6 +258,7 @@ public:
         }
 
         rms_error_ = sqrt(rms_error_/(N_*N_));
+
         return rms_error_;
     }
 
@@ -284,34 +287,27 @@ public:
         return dt_;
     }
 
-    M_type M_real() const
-    {
-        return M_real_;
-    }
-
 private:
 
-    M_type initialize_density()
+    void initialize_density()
     {
-        M_type n_particles = 0;
-
+        size_type tmp = 0;
         /// initialize rho(x,y,t=0) = sin(pi*x)*sin(pi*y)
         /// and m(x,y,t=0) = fac_ * rho(x,y,t=0)
         for (size_type i = 1; i < N_-1; ++i) {
             for (size_type j = 1; j < N_-1; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
                 m_[i*N_ + j] = lround(rho_[i*N_ + j] * fac_ * dh_*dh_);
-                n_particles += m_[i*N_ + j];
+                tmp += m_[i*N_ + j];
             }
         }
-
-        return n_particles;
+        std::cout << "Actual # of particles = " << tmp << std::endl;
     }
 
-    size_type N_, Ntot, n_step_;
-    M_type M_, M_real_;
+    value_type D_;
+    size_type N_, Ntot, M_, n_step_;
 
-    value_type D_, dh_, dt_, lambda_, fac_, rms_error_;
+    value_type dh_, dt_, lambda_, fac_, rms_error_;
 
     std::vector<value_type> rho_;
     std::vector<particle_type> m_, m_tmp;
@@ -331,19 +327,13 @@ int main(int argc, char* argv[])
     }
 
     const value_type D  = std::stod (argv[1]);
-          size_type  N  = std::stoul(argv[2]);
+    const size_type  N  = std::stoul(argv[2]);
     const M_type     M  = std::stoul(argv[3]);
     const value_type dt = std::stod (argv[4]);
 
-    if ( N % 2 != 0 ) {
-        N++;
-        std::cout << "Warning: N must be a multiple of 2. Using N = "
-                  << N << " instead." << '\n';
-    }
-
 //    if ( (N-2) % 8 != 0 ) {
 //        N += 8 - ((N-2) % 8);
-//        std::cout << "Warning: (N-2) must be a multiple of 8 for AVX. Using N = "
+//        std::cout << "(N-2) must be a multiple of 8 for AVX. Using N = "
 //                  << N << " instead." << '\n';
 //    }
 
@@ -367,16 +357,10 @@ int main(int argc, char* argv[])
               << "M = " << M << std::endl;
 
     myInt64 min_cycles = 0;
-    value_type final_time;
-    M_type M_initial, M_final;
-
-    std::vector<value_type> e_rms;
-    e_rms.resize(n_runs, 0.0);
-
-    srand(42);
+    value_type e_rms, final_time;
 
     for(size_type i = 0; i < n_runs; i++) {
-        Diffusion2D system(D, N, M, dt, rand());
+        Diffusion2D system(D, N, M, dt);
 
 #ifdef USE_TIMER
         timer t;
@@ -401,9 +385,10 @@ int main(int argc, char* argv[])
 #endif // USE_TSC
 
         system.compute_density();
-        e_rms[i] = system.compute_rms_error();
+        system.compute_rms_error();
+        e_rms = system.rms_error();
 
-        if ( (e_rms[i] < 0.1) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+        if ( (e_rms < 0.1) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
             min_cycles = cycles;
         }
 
@@ -411,23 +396,10 @@ int main(int argc, char* argv[])
             final_time = system.time();
             system.write_density("Solutions/RW_AVX.dat");
             system.write_reference("Solutions/RW_ref.dat");
-            M_initial = system.M_real();
-            M_final = system.compute_num_particles();
         }
     }
 
-    size_type n = e_rms.size() / 2;
-    std::nth_element(e_rms.begin(), e_rms.begin()+n, e_rms.end());
-    value_type median_rms = e_rms[n];
-    if( e_rms.size() % 2 == 0 )
-    {
-        std::nth_element(e_rms.begin(), e_rms.begin()+n-1, e_rms.end());
-        median_rms = 0.5*(e_rms[n-1] + median_rms);
-    }
-
-    std::cout << "Actual initial # of particles = " << M_initial << '\n';
-    std::cout << "Actual  final  # of particles = " << M_final << '\n';
-    std::cout << "Median RMS Error = " << median_rms << '\n';
+    std::cout << "RMS Error of final run = " << e_rms << '\n';
     std::cout << "At a final time = " << final_time << '\n';
     std::cout << "Minimum Cycles over " << n_runs << " runs = " << min_cycles << '\n';
 

@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
 
         if ( i == n_runs-1 ) {
             final_time = system.time();
-            system.write_density("Solutions/RW_AVX.dat");
+            system.write_density("Solutions/RW_scalar_MKL.dat");
             system.write_reference("Solutions/RW_ref.dat");
         }
     }
