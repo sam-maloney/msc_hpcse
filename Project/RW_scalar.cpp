@@ -54,7 +54,7 @@ public:
 
         rho_.resize(Ntot, 0.0);
         m_.resize(Ntot, 0);
-        m_tmp.resize(Ntot, 0);
+        m_tmp_.resize(Ntot, 0);
 
         n_step_ = 0;
 
@@ -66,7 +66,7 @@ public:
         while ( time() < t_max )
         {
 
-        m_tmp = m_;
+        m_tmp_ = m_;
 
         /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
@@ -78,16 +78,16 @@ public:
                     size_type n_up    = d(prng_eng);
                     size_type n_down  = d(prng_eng);
 
-                    m_tmp[(i  )*N_ + j - 1] += n_left;
-                    m_tmp[(i  )*N_ + j + 1] += n_right;
-                    m_tmp[(i-1)*N_ + j    ] += n_up;
-                    m_tmp[(i+1)*N_ + j    ] += n_down;
-                    m_tmp[(i  )*N_ + j    ] -= (n_left + n_right + n_up + n_down);
+                    m_tmp_[(i  )*N_ + j - 1] += n_left;
+                    m_tmp_[(i  )*N_ + j + 1] += n_right;
+                    m_tmp_[(i-1)*N_ + j    ] += n_up;
+                    m_tmp_[(i+1)*N_ + j    ] += n_down;
+                    m_tmp_[(i  )*N_ + j    ] -= (n_left + n_right + n_up + n_down);
                 }
             }
         }
 
-        m_.swap(m_tmp);
+        m_.swap(m_tmp_);
         n_step_++;
 
         } // while time() < t_max
@@ -213,7 +213,7 @@ private:
     value_type dh_, dt_, lambda_, fac_, rms_error_;
 
     std::vector<value_type> rho_;
-    std::vector<particle_type> m_, m_tmp;
+    std::vector<particle_type> m_, m_tmp_;
 
     sitmo::prng_engine prng_eng;
 };

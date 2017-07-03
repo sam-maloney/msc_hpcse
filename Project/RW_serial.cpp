@@ -54,7 +54,7 @@ public:
 
         rho_.resize(Ntot, 0.0);
         m_.resize(Ntot, 0);
-        m_tmp.resize(Ntot, 0);
+        m_tmp_.resize(Ntot, 0);
 
         eng0.seed(0);
         n_step_ = 0;
@@ -64,7 +64,7 @@ public:
 
     void advance()
     {
-        m_tmp = m_;
+        m_tmp_ = m_;
 
         /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
@@ -75,24 +75,24 @@ public:
                         continue; // does not move
                     }
 
-                    --m_tmp[i*N_ + j];
+                    --m_tmp_[i*N_ + j];
                     value_type direction = static_cast<value_type>(eng0()) /
                                            static_cast<value_type>(eng0.max());
 
                     if ( direction < 0.25 ) {
-                        ++m_tmp[i*N_ + j - 1]; // moves left
+                        ++m_tmp_[i*N_ + j - 1]; // moves left
                     } else if ( direction < 0.5 ) {
-                        ++m_tmp[i*N_ + j + 1]; // moves right
+                        ++m_tmp_[i*N_ + j + 1]; // moves right
                     } else if ( direction < 0.75 ) {
-                        ++m_tmp[(i-1)*N_ + j]; // moves up
+                        ++m_tmp_[(i-1)*N_ + j]; // moves up
                     } else {
-                        ++m_tmp[(i+1)*N_ + j]; // moves down
+                        ++m_tmp_[(i+1)*N_ + j]; // moves down
                     }
                 }
             }
         }
 
-        m_.swap(m_tmp);
+        m_.swap(m_tmp_);
 
         for(size_type i = 1; i < N_-1; ++i) {
             for(size_type j = 1; j < N_-1; ++j) {
@@ -210,7 +210,7 @@ private:
     value_type dh_, dt_, lambda_, fac_, p_stay_, rms_error_;
 
     std::vector<value_type> rho_;
-    std::vector<particle_type> m_, m_tmp;
+    std::vector<particle_type> m_, m_tmp_;
 
     sitmo::prng_engine eng0;
 };
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
         myInt64 start, cycles;
         start = start_tsc();
 #endif // USE_TSC
-        
+
         while ( system.time() < t_max ) {
             system.advance();
         }

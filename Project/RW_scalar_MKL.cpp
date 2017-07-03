@@ -52,7 +52,7 @@ public:
 
         rho_.resize(Ntot, 0.0);
         m_.resize(Ntot, 0);
-        m_tmp.resize(Ntot, 0);
+        m_tmp_.resize(Ntot, 0);
 
         n_step_ = 0;
 
@@ -64,7 +64,7 @@ public:
         while ( time() < t_max )
         {
 
-        m_tmp = m_;
+        m_tmp_ = m_;
         int r[4];
 
         /// Dirichlet boundaries
@@ -72,16 +72,16 @@ public:
             for(size_type j = 1; j < N_-1; ++j) {
                 if ( m_[i*N_ + j] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[i*N_ + j], lambda_);
-                    m_tmp[(i  )*N_ + j - 1] += r[0];
-                    m_tmp[(i  )*N_ + j + 1] += r[1];
-                    m_tmp[(i-1)*N_ + j    ] += r[2];
-                    m_tmp[(i+1)*N_ + j    ] += r[3];
-                    m_tmp[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+                    m_tmp_[(i  )*N_ + j - 1] += r[0];
+                    m_tmp_[(i  )*N_ + j + 1] += r[1];
+                    m_tmp_[(i-1)*N_ + j    ] += r[2];
+                    m_tmp_[(i+1)*N_ + j    ] += r[3];
+                    m_tmp_[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
                 }
             }
         }
 
-        m_.swap(m_tmp);
+        m_.swap(m_tmp_);
         n_step_++;
 
         } // while time() < t_max
@@ -207,7 +207,7 @@ private:
     value_type dh_, dt_, lambda_, fac_, rms_error_;
 
     std::vector<value_type> rho_;
-    std::vector<particle_type> m_, m_tmp;
+    std::vector<particle_type> m_, m_tmp_;
 
     VSLStreamStatePtr stream;
 };

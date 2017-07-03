@@ -8,7 +8,9 @@
 #include <cstdlib>
 #include <mkl_vsl.h>
 #include <x86intrin.h>
+#include <omp.h>
 #include "timer.hpp"
+#include "omp_mutex.hpp"
 
 /// Select which runtime measure to use
 //#define USE_TIMER
@@ -33,10 +35,16 @@ public:
                 const size_type N,
                 const M_type M,
                 const value_type dt,
-                const size_type seed)
-    : D_(D), N_(N), Ntot(N_*N_), M_(M), dt_(dt)
+                const size_type seed,
+                const value_type t_max)
+    : D_(D), N_(N), Ntot(N_*N_), M_(M), dt_(dt), t_max_(t_max)
     {
-        vslNewStream(&stream, VSL_BRNG_SFMT19937, seed);
+        #pragma omp parallel
+        {
+            vslNewStream(&stream, VSL_BRNG_SFMT19937, seed);
+            vslSkipAheadStream(stream, omp_get_thread_num()*
+                4*Ntot*static_cast<long long int>(t_max_/dt_) );
+        }
 
         /// real space grid spacing
         dh_ = 1.0 / (N_ - 1);
@@ -56,7 +64,8 @@ public:
 
         rho_.resize(Ntot, 0.0);
         m_.resize(Ntot, 0);
-        m_tmp.resize(Ntot, 0);
+        m_tmp_.resize(Ntot, 0);
+        locks_.resize(omp_get_max_threads() - 1);
 
         n_step_ = 0;
 
@@ -68,35 +77,137 @@ public:
         vslDeleteStream(&stream);
     }
 
-    void run_simulation(value_type t_max)
+    void run_simulation()
     {
-        int r[32] = {0};
+        /// Dirichlet boundaries
+
         __m128i zero_v = _mm_setzero_si128();
 
-        while ( time() < t_max )
+        #pragma omp parallel
         {
-        
-        m_tmp = m_;
 
-        /// Dirichlet boundaries
-        for(size_type i = 1; i < N_-1; ++i) {
+        size_type start_row, end_row;
+        start_row =  omp_get_thread_num()    * (N-2)/omp_get_num_threads() + 1;
+        end_row   = (omp_get_thread_num()+1) * (N-2)/omp_get_num_threads();
+
+        int r[32] = {0};
+
+        while ( time() < t_max_ )
+        {
+
+        /// The first row in the thread's section
+        if ( omp_get_thread_num() != 0 ) {
+            locks_[omp_get_thread_num()-1].lock();
+        }
+        size_type j;
+        for(j = 1; j < N_-6; j += 6) {
+            __m256i mc_v, md_v, t0_v;
+            __m256i row0_v, row1_v, row2_v, row3_v;
+            __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
+
+            mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row-1)*N_ + j - 1));
+            mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row  )*N_ + j - 1));
+            md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row+1)*N_ + j - 1));
+
+            if ( m_[start_row*N_ + j    ] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[start_row*N_ + j    ], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r   ), zero_v);
+            }
+
+            if ( m_[start_row*N_ + j + 1] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[start_row*N_ + j + 1], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
+            }
+
+            if ( m_[start_row*N_ + j + 2] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[start_row*N_ + j + 2], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+17), zero_v);
+            }
+
+            if ( m_[start_row*N_ + j + 3] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[start_row*N_ + j + 3], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+27), zero_v);
+            }
+
+            if ( m_[start_row*N_ + j + 4] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[start_row*N_ + j + 4], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
+            }
+
+            if ( m_[start_row*N_ + j + 5] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[start_row*N_ + j + 5], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+12), zero_v);
+            }
+
+            row0_v = _mm256_loadu_si256((__m256i*)(r   ));
+            row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
+            row2_v = _mm256_loadu_si256((__m256i*)(r+16));
+            row3_v = _mm256_loadu_si256((__m256i*)(r+24));
+
+            tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
+            tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
+            tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
+            tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
+
+            row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
+            row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
+            row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
+            row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+
+            t0_v = _mm256_slli_epi32(row1_v, 2);
+
+            mu_v = _mm256_add_epi32(mu_v, row1_v);
+            mc_v = _mm256_add_epi32(mc_v, row0_v);
+            mc_v = _mm256_add_epi32(mc_v, row3_v);
+            mc_v = _mm256_sub_epi32(mc_v, t0_v);
+            md_v = _mm256_add_epi32(md_v, row2_v);
+
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row-1)*N_ + j - 1), mu_v);
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row  )*N_ + j - 1), mc_v);
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row+1)*N_ + j - 1), md_v);
+        } // main column loop
+
+        for(; j < N_-1; ++j) {
+            if ( m_[start_row*N_ + j] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[start_row*N_ + j], lambda_);
+
+                m_tmp_[(start_row  )*N_ + j - 1] += r[0];
+                m_tmp_[(start_row  )*N_ + j + 1] += r[1];
+                m_tmp_[(start_row-1)*N_ + j    ] += r[2];
+                m_tmp_[(start_row+1)*N_ + j    ] += r[3];
+                m_tmp_[(start_row  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+            }
+        } //remaining column loop
+
+        if ( omp_get_thread_num() != 0 ) {
+            locks_[omp_get_thread_num()-1].unlock();
+        } // End of first row in thread's section
+
+        /// The middle rows in the thread's section
+        for(size_type i = start_row+1; i < end_row; ++i) {
             size_type j;
             for(j = 1; j < N_-6; j += 6) {
                 __m256i mc_v, mu_v, md_v, t0_v;
                 __m256i row0_v, row1_v, row2_v, row3_v;
                 __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
-                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j - 1));
-                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1));
-                md_v = _mm256_loadu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j - 1));
+                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1));
+                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1));
+                md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1));
 
-                if ( m_[i*N_ + j    ] > 0 ) {   
+                if ( m_[i*N_ + j    ] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[i*N_ + j    ], lambda_);
                 } else {
                     _mm_storeu_si128((__m128i*)(r   ), zero_v);
                 }
-                    
-                if ( m_[i*N_ + j + 1] > 0 ) {   
+
+                if ( m_[i*N_ + j + 1] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[i*N_ + j + 1], lambda_);
                 } else {
                     _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
@@ -114,13 +225,13 @@ public:
                     _mm_storeu_si128((__m128i*)(r+27), zero_v);
                 }
 
-                if ( m_[i*N_ + j + 4] > 0 ) {   
+                if ( m_[i*N_ + j + 4] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[i*N_ + j + 4], lambda_);
                 } else {
                     _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
                 }
-                    
-                if ( m_[i*N_ + j + 5] > 0 ) {   
+
+                if ( m_[i*N_ + j + 5] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[i*N_ + j + 5], lambda_);
                 } else {
                     _mm_storeu_si128((__m128i*)(r+12), zero_v);
@@ -135,7 +246,7 @@ public:
                 tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
                 tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
                 tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
-                
+
                 row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
                 row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
                 row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
@@ -148,29 +259,127 @@ public:
                 mc_v = _mm256_add_epi32(mc_v, row3_v);
                 mc_v = _mm256_sub_epi32(mc_v, t0_v);
                 md_v = _mm256_add_epi32(md_v, row2_v);
-                
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i-1)*N_ + j - 1), mu_v);
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i  )*N_ + j - 1), mc_v);
-                _mm256_storeu_si256((__m256i*)(m_tmp.data() + (i+1)*N_ + j - 1), md_v);
+
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1), mu_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1), mc_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1), md_v);
             } // main column loop
 
             for(; j < N_-1; ++j) {
                 if ( m_[i*N_ + j] > 0 ) {
                     viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[i*N_ + j], lambda_);
-                    
-                    m_tmp[(i  )*N_ + j - 1] += r[0];
-                    m_tmp[(i  )*N_ + j + 1]  = r[1] + m_[(i  )*N_ + j + 1];
-                    m_tmp[(i-1)*N_ + j    ] += r[2];
-                    m_tmp[(i+1)*N_ + j    ]  = r[3] + m_[(i+1)*N_ + j    ];
-                    m_tmp[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+
+                    m_tmp_[(i  )*N_ + j - 1] += r[0];
+                    m_tmp_[(i  )*N_ + j + 1] += r[1];
+                    m_tmp_[(i-1)*N_ + j    ] += r[2];
+                    m_tmp_[(i+1)*N_ + j    ] += r[3];
+                    m_tmp_[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
                 }
             } //remaining column loop
-        } // main row loop
+        } // main row loop of thread's section
 
-        m_.swap(m_tmp);
+        /// The final row in the thread's section
+        if ( omp_get_thread_num() != omp_get_num_threads()-1 ) {
+            locks_[omp_get_thread_num()].lock();
+        }
+        size_type j;
+        for(j = 1; j < N_-6; j += 6) {
+            __m256i mc_v, mu_v, md_v, t0_v;
+            __m256i row0_v, row1_v, row2_v, row3_v;
+            __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
+
+            mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row-1)*N_ + j - 1));
+            mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row  )*N_ + j - 1));
+            md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row+1)*N_ + j - 1));
+
+            if ( m_[end_row*N_ + j    ] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[end_row*N_ + j    ], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r   ), zero_v);
+            }
+
+            if ( m_[end_row*N_ + j + 1] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[end_row*N_ + j + 1], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
+            }
+
+            if ( m_[end_row*N_ + j + 2] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[end_row*N_ + j + 2], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+17), zero_v);
+            }
+
+            if ( m_[end_row*N_ + j + 3] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[end_row*N_ + j + 3], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+27), zero_v);
+            }
+
+            if ( m_[end_row*N_ + j + 4] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[end_row*N_ + j + 4], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
+            }
+
+            if ( m_[end_row*N_ + j + 5] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[end_row*N_ + j + 5], lambda_);
+            } else {
+                _mm_storeu_si128((__m128i*)(r+12), zero_v);
+            }
+
+            row0_v = _mm256_loadu_si256((__m256i*)(r   ));
+            row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
+            row2_v = _mm256_loadu_si256((__m256i*)(r+16));
+            row3_v = _mm256_loadu_si256((__m256i*)(r+24));
+
+            tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
+            tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
+            tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
+            tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
+
+            row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
+            row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
+            row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
+            row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+
+            t0_v = _mm256_slli_epi32(row1_v, 2);
+
+            mu_v = _mm256_add_epi32(mu_v, row1_v);
+            mc_v = _mm256_add_epi32(mc_v, row0_v);
+            mc_v = _mm256_add_epi32(mc_v, row3_v);
+            mc_v = _mm256_sub_epi32(mc_v, t0_v);
+            md_v = _mm256_add_epi32(md_v, row2_v);
+
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row-1)*N_ + j - 1), mu_v);
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row  )*N_ + j - 1), mc_v);
+            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row+1)*N_ + j - 1), md_v);
+        } // main column loop
+
+        for(; j < N_-1; ++j) {
+            if ( m_[end_row*N_ + j] > 0 ) {
+                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[end_row*N_ + j], lambda_);
+
+                m_tmp_[(end_row  )*N_ + j - 1] += r[0];
+                m_tmp_[(end_row  )*N_ + j + 1] += r[1];
+                m_tmp_[(end_row-1)*N_ + j    ] += r[2];
+                m_tmp_[(end_row+1)*N_ + j    ] += r[3];
+                m_tmp_[(end_row  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+            }
+        } //remaining column loop
+
+        if ( omp_get_thread_num() != omp_get_num_threads()-1 ) {
+            locks_[omp_get_thread_num()].unlock();
+        } // End of final row in thread's section
+
+        #pragma omp single
+        {
+        m_ = m_tmp_;
         n_step_++;
+        }
 
         } // while time() < t_max
+        } // OMP parallel region
     }
 
     void compute_density()
@@ -297,6 +506,7 @@ private:
             for (size_type j = 1; j < N_-1; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
                 m_[i*N_ + j] = lround(rho_[i*N_ + j] * fac_ * dh_*dh_);
+                m_tmp_[i*N_ + j] = m_[i*N_ + j];
                 n_particles += m_[i*N_ + j];
             }
         }
@@ -307,13 +517,17 @@ private:
     size_type N_, Ntot, n_step_;
     M_type M_, M_real_;
 
-    value_type D_, dh_, dt_, lambda_, fac_, rms_error_;
+    value_type D_, dh_, dt_, lambda_, fac_, rms_error_, t_max_;
 
     std::vector<value_type> rho_;
-    std::vector<particle_type> m_, m_tmp;
+    std::vector<particle_type> m_, m_tmp_;
+    std::vector<omp_mutex> locks_;
 
-    VSLStreamStatePtr stream;
+    static VSLStreamStatePtr stream;
+    #pragma omp threadprivate(stream)
 };
+
+VSLStreamStatePtr Diffusion2D::stream;
 
 
 int main(int argc, char* argv[])
@@ -372,7 +586,7 @@ int main(int argc, char* argv[])
     srand(42);
 
     for(size_type i = 0; i < n_runs; i++) {
-        Diffusion2D system(D, N, M, dt, rand());
+        Diffusion2D system(D, N, M, dt, rand(), t_max);
 
 #ifdef USE_TIMER
         timer t;
@@ -384,7 +598,7 @@ int main(int argc, char* argv[])
         start = start_tsc();
 #endif // USE_TSC
 
-        system.run_simulation(t_max);
+        system.run_simulation();
 
 #ifdef USE_TIMER
         t.stop();
