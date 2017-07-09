@@ -87,8 +87,15 @@ public:
         {
 
         size_type start_row, end_row;
-        start_row =  omp_get_thread_num()    * (N-2)/omp_get_num_threads() + 1;
-        end_row   = (omp_get_thread_num()+1) * (N-2)/omp_get_num_threads();
+        start_row =  omp_get_thread_num()    * (N_-2)/omp_get_num_threads() + 1;
+        end_row   = (omp_get_thread_num()+1) * (N_-2)/omp_get_num_threads();
+
+//        #pragma omp critical
+//        {
+//            std::cout << "Thread # = " << omp_get_thread_num() << '\t';
+//            std::cout << "starting row = " << start_row << '\t';
+//            std::cout << "ending row = " << end_row << std::endl;
+//        }
 
         int r[32] = {0};
 
@@ -101,7 +108,7 @@ public:
         }
         size_type j;
         for(j = 1; j < N_-6; j += 6) {
-            __m256i mc_v, md_v, t0_v;
+            __m256i mu_v, mc_v, md_v, t0_v;
             __m256i row0_v, row1_v, row2_v, row3_v;
             __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
@@ -282,7 +289,6 @@ public:
         if ( omp_get_thread_num() != omp_get_num_threads()-1 ) {
             locks_[omp_get_thread_num()].lock();
         }
-        size_type j;
         for(j = 1; j < N_-6; j += 6) {
             __m256i mc_v, mu_v, md_v, t0_v;
             __m256i row0_v, row1_v, row2_v, row3_v;
