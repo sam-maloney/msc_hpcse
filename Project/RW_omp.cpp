@@ -102,102 +102,105 @@ public:
         while ( time() < t_max_ )
         {
 
-        /// The first row in the thread's section
+        /// The first 2 rows in the thread's section
         if ( omp_get_thread_num() != 0 ) {
             locks_[omp_get_thread_num()-1].lock();
         }
-        size_type j;
-        for(j = 1; j < N_-6; j += 6) {
-            __m256i mu_v, mc_v, md_v, t0_v;
-            __m256i row0_v, row1_v, row2_v, row3_v;
-            __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
-            mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row-1)*N_ + j - 1));
-            mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row  )*N_ + j - 1));
-            md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (start_row+1)*N_ + j - 1));
+        for(size_type i = start_row; i < start_row+2; ++i) {
+            size_type j;
+            for(j = 1; j < N_-6; j += 6) {
+                __m256i mc_v, mu_v, md_v, t0_v;
+                __m256i row0_v, row1_v, row2_v, row3_v;
+                __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
-            if ( m_[start_row*N_ + j    ] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[start_row*N_ + j    ], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r   ), zero_v);
-            }
+                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1));
+                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1));
+                md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1));
 
-            if ( m_[start_row*N_ + j + 1] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[start_row*N_ + j + 1], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
-            }
+                if ( m_[i*N_ + j    ] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[i*N_ + j    ], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r   ), zero_v);
+                }
 
-            if ( m_[start_row*N_ + j + 2] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[start_row*N_ + j + 2], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+17), zero_v);
-            }
+                if ( m_[i*N_ + j + 1] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[i*N_ + j + 1], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
+                }
 
-            if ( m_[start_row*N_ + j + 3] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[start_row*N_ + j + 3], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+27), zero_v);
-            }
+                if ( m_[i*N_ + j + 2] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[i*N_ + j + 2], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+17), zero_v);
+                }
 
-            if ( m_[start_row*N_ + j + 4] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[start_row*N_ + j + 4], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
-            }
+                if ( m_[i*N_ + j + 3] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[i*N_ + j + 3], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+27), zero_v);
+                }
 
-            if ( m_[start_row*N_ + j + 5] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[start_row*N_ + j + 5], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+12), zero_v);
-            }
+                if ( m_[i*N_ + j + 4] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[i*N_ + j + 4], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
+                }
 
-            row0_v = _mm256_loadu_si256((__m256i*)(r   ));
-            row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
-            row2_v = _mm256_loadu_si256((__m256i*)(r+16));
-            row3_v = _mm256_loadu_si256((__m256i*)(r+24));
+                if ( m_[i*N_ + j + 5] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[i*N_ + j + 5], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+12), zero_v);
+                }
 
-            tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
-            tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
-            tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
-            tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
+                row0_v = _mm256_loadu_si256((__m256i*)(r   ));
+                row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
+                row2_v = _mm256_loadu_si256((__m256i*)(r+16));
+                row3_v = _mm256_loadu_si256((__m256i*)(r+24));
 
-            row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
-            row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
-            row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
-            row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+                tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
+                tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
+                tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
+                tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
 
-            t0_v = _mm256_slli_epi32(row1_v, 2);
+                row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
+                row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
+                row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
+                row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
 
-            mu_v = _mm256_add_epi32(mu_v, row1_v);
-            mc_v = _mm256_add_epi32(mc_v, row0_v);
-            mc_v = _mm256_add_epi32(mc_v, row3_v);
-            mc_v = _mm256_sub_epi32(mc_v, t0_v);
-            md_v = _mm256_add_epi32(md_v, row2_v);
+                t0_v = _mm256_slli_epi32(row1_v, 2);
 
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row-1)*N_ + j - 1), mu_v);
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row  )*N_ + j - 1), mc_v);
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (start_row+1)*N_ + j - 1), md_v);
-        } // main column loop
+                mu_v = _mm256_add_epi32(mu_v, row1_v);
+                mc_v = _mm256_add_epi32(mc_v, row0_v);
+                mc_v = _mm256_add_epi32(mc_v, row3_v);
+                mc_v = _mm256_sub_epi32(mc_v, t0_v);
+                md_v = _mm256_add_epi32(md_v, row2_v);
 
-        for(; j < N_-1; ++j) {
-            if ( m_[start_row*N_ + j] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[start_row*N_ + j], lambda_);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1), mu_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1), mc_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1), md_v);
+            } // main column loop
 
-                m_tmp_[(start_row  )*N_ + j - 1] += r[0];
-                m_tmp_[(start_row  )*N_ + j + 1] += r[1];
-                m_tmp_[(start_row-1)*N_ + j    ] += r[2];
-                m_tmp_[(start_row+1)*N_ + j    ] += r[3];
-                m_tmp_[(start_row  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
-            }
-        } //remaining column loop
+            for(; j < N_-1; ++j) {
+                if ( m_[i*N_ + j] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[i*N_ + j], lambda_);
+
+                    m_tmp_[(i  )*N_ + j - 1] += r[0];
+                    m_tmp_[(i  )*N_ + j + 1] += r[1];
+                    m_tmp_[(i-1)*N_ + j    ] += r[2];
+                    m_tmp_[(i+1)*N_ + j    ] += r[3];
+                    m_tmp_[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+                }
+            } //remaining column loop
+        } // first 2 row loop of thread's section
 
         if ( omp_get_thread_num() != 0 ) {
             locks_[omp_get_thread_num()-1].unlock();
-        } // End of first row in thread's section
+        } // End of first 2 rows in thread's section
 
         /// The middle rows in the thread's section
-        for(size_type i = start_row+1; i < end_row; ++i) {
+        for(size_type i = start_row+2; i < end_row-1; ++i) {
             size_type j;
             for(j = 1; j < N_-6; j += 6) {
                 __m256i mc_v, mu_v, md_v, t0_v;
@@ -285,98 +288,104 @@ public:
             } //remaining column loop
         } // main row loop of thread's section
 
-        /// The final row in the thread's section
-        if ( omp_get_thread_num() != omp_get_num_threads()-1 ) {
+        /// The final 2 rows in the thread's section
+        if ( omp_get_thread_num() != (omp_get_num_threads()-1) ) {
             locks_[omp_get_thread_num()].lock();
         }
-        for(j = 1; j < N_-6; j += 6) {
-            __m256i mc_v, mu_v, md_v, t0_v;
-            __m256i row0_v, row1_v, row2_v, row3_v;
-            __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
-            mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row-1)*N_ + j - 1));
-            mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row  )*N_ + j - 1));
-            md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (end_row+1)*N_ + j - 1));
+        for(size_type i = end_row-1; i < end_row+1; ++i) {
+            size_type j;
+            for(j = 1; j < N_-6; j += 6) {
+                __m256i mc_v, mu_v, md_v, t0_v;
+                __m256i row0_v, row1_v, row2_v, row3_v;
+                __m256  tmp0_v, tmp1_v, tmp2_v, tmp3_v;
 
-            if ( m_[end_row*N_ + j    ] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[end_row*N_ + j    ], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r   ), zero_v);
-            }
+                mu_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1));
+                mc_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1));
+                md_v = _mm256_loadu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1));
 
-            if ( m_[end_row*N_ + j + 1] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[end_row*N_ + j + 1], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
-            }
+                if ( m_[i*N_ + j    ] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r     , m_[i*N_ + j    ], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r   ), zero_v);
+                }
 
-            if ( m_[end_row*N_ + j + 2] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[end_row*N_ + j + 2], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+17), zero_v);
-            }
+                if ( m_[i*N_ + j + 1] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 8 , m_[i*N_ + j + 1], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+8 ), zero_v);
+                }
 
-            if ( m_[end_row*N_ + j + 3] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[end_row*N_ + j + 3], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+27), zero_v);
-            }
+                if ( m_[i*N_ + j + 2] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 17, m_[i*N_ + j + 2], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+17), zero_v);
+                }
 
-            if ( m_[end_row*N_ + j + 4] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[end_row*N_ + j + 4], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
-            }
+                if ( m_[i*N_ + j + 3] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 27, m_[i*N_ + j + 3], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+27), zero_v);
+                }
 
-            if ( m_[end_row*N_ + j + 5] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[end_row*N_ + j + 5], lambda_);
-            } else {
-                _mm_storeu_si128((__m128i*)(r+12), zero_v);
-            }
+                if ( m_[i*N_ + j + 4] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 4 , m_[i*N_ + j + 4], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+4 ), zero_v);
+                }
 
-            row0_v = _mm256_loadu_si256((__m256i*)(r   ));
-            row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
-            row2_v = _mm256_loadu_si256((__m256i*)(r+16));
-            row3_v = _mm256_loadu_si256((__m256i*)(r+24));
+                if ( m_[i*N_ + j + 5] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r + 12, m_[i*N_ + j + 5], lambda_);
+                } else {
+                    _mm_storeu_si128((__m128i*)(r+12), zero_v);
+                }
 
-            tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
-            tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
-            tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
-            tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
+                row0_v = _mm256_loadu_si256((__m256i*)(r   ));
+                row1_v = _mm256_loadu_si256((__m256i*)(r+8 ));
+                row2_v = _mm256_loadu_si256((__m256i*)(r+16));
+                row3_v = _mm256_loadu_si256((__m256i*)(r+24));
 
-            row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
-            row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
-            row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
-            row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
+                tmp0_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row0_v), _mm256_castsi256_ps(row1_v), 0xCC);
+                tmp1_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row1_v), _mm256_castsi256_ps(row2_v), 0x99);
+                tmp2_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row2_v), _mm256_castsi256_ps(row3_v), 0xCC);
+                tmp3_v = _mm256_shuffle_ps(_mm256_castsi256_ps(row3_v), _mm256_castsi256_ps(row0_v), 0x99);
 
-            t0_v = _mm256_slli_epi32(row1_v, 2);
+                row0_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp2_v, tmp0_v, 0x88) );
+                row1_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0x88) );
+                row2_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp3_v, tmp1_v, 0xDD) );
+                row3_v = _mm256_castps_si256( _mm256_shuffle_ps(tmp0_v, tmp2_v, 0xDD) );
 
-            mu_v = _mm256_add_epi32(mu_v, row1_v);
-            mc_v = _mm256_add_epi32(mc_v, row0_v);
-            mc_v = _mm256_add_epi32(mc_v, row3_v);
-            mc_v = _mm256_sub_epi32(mc_v, t0_v);
-            md_v = _mm256_add_epi32(md_v, row2_v);
+                t0_v = _mm256_slli_epi32(row1_v, 2);
 
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row-1)*N_ + j - 1), mu_v);
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row  )*N_ + j - 1), mc_v);
-            _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (end_row+1)*N_ + j - 1), md_v);
-        } // main column loop
+                mu_v = _mm256_add_epi32(mu_v, row1_v);
+                mc_v = _mm256_add_epi32(mc_v, row0_v);
+                mc_v = _mm256_add_epi32(mc_v, row3_v);
+                mc_v = _mm256_sub_epi32(mc_v, t0_v);
+                md_v = _mm256_add_epi32(md_v, row2_v);
 
-        for(; j < N_-1; ++j) {
-            if ( m_[end_row*N_ + j] > 0 ) {
-                viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[end_row*N_ + j], lambda_);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i-1)*N_ + j - 1), mu_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i  )*N_ + j - 1), mc_v);
+                _mm256_storeu_si256((__m256i*)(m_tmp_.data() + (i+1)*N_ + j - 1), md_v);
+            } // main column loop
 
-                m_tmp_[(end_row  )*N_ + j - 1] += r[0];
-                m_tmp_[(end_row  )*N_ + j + 1] += r[1];
-                m_tmp_[(end_row-1)*N_ + j    ] += r[2];
-                m_tmp_[(end_row+1)*N_ + j    ] += r[3];
-                m_tmp_[(end_row  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
-            }
-        } //remaining column loop
+            for(; j < N_-1; ++j) {
+                if ( m_[i*N_ + j] > 0 ) {
+                    viRngBinomial(VSL_RNG_METHOD_BINOMIAL_BTPE, stream, 4, r, m_[i*N_ + j], lambda_);
 
-        if ( omp_get_thread_num() != omp_get_num_threads()-1 ) {
+                    m_tmp_[(i  )*N_ + j - 1] += r[0];
+                    m_tmp_[(i  )*N_ + j + 1] += r[1];
+                    m_tmp_[(i-1)*N_ + j    ] += r[2];
+                    m_tmp_[(i+1)*N_ + j    ] += r[3];
+                    m_tmp_[(i  )*N_ + j    ] -= (r[0] + r[1] + r[2] + r[3]);
+                }
+            } //remaining column loop
+        } // final 2 row loop of thread's section
+
+        if ( omp_get_thread_num() != (omp_get_num_threads()-1) ) {
             locks_[omp_get_thread_num()].unlock();
-        } // End of final row in thread's section
+        } // End of final 2 rows in thread's section
+
+        #pragma omp barrier
 
         #pragma omp single
         {
@@ -547,21 +556,21 @@ int main(int argc, char* argv[])
     }
 
     const value_type D  = std::stod (argv[1]);
-    const size_type  N  = std::stoul(argv[2]);
+          size_type  N  = std::stoul(argv[2]);
     const M_type     M  = std::stoul(argv[3]);
     const value_type dt = std::stod (argv[4]);
 
-//    if ( N % 2 != 0 ) {
-//        N++;
-//        std::cout << "Warning: N must be a multiple of 2. Using N = "
-//                  << N << " instead." << '\n';
-//    }
-//
-//    if ( (N-2) % 8 != 0 ) {
-//        N += 8 - ((N-2) % 8);
-//        std::cout << "Warning: (N-2) must be a multiple of 8 for AVX. Using N = "
-//                  << N << " instead." << '\n';
-//    }
+    if ( (N-2) < 4 ) {
+        N = 6;
+        std::cout << "Warning: (N-2) must be at least 4 for OMP. Using N = "
+                  << N << " instead.\n";
+    }
+
+    if ( omp_get_max_threads() > ((N-2)/4) ) {
+        omp_set_num_threads((N-2)/4);
+        std::cout << "Warning: too many threads for given N. Using "
+                  << omp_get_max_threads() << " threads instead.\n";
+    }
 
     value_type t_max;
     size_type n_runs;
@@ -578,7 +587,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running RW AVX Simulations" << '\n';
+    std::cout << "Running RW OMP Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << '\t'
               << "M = " << M << std::endl;
 
