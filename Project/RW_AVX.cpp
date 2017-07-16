@@ -331,17 +331,10 @@ int main(int argc, char* argv[])
     const M_type     M  = std::stoul(argv[3]);
     const value_type dt = std::stod (argv[4]);
 
-//    if ( N % 2 != 0 ) {
-//        N++;
-//        std::cout << "Warning: N must be a multiple of 2. Using N = "
-//                  << N << " instead." << '\n';
-//    }
-//
-//    if ( (N-2) % 8 != 0 ) {
-//        N += 8 - ((N-2) % 8);
-//        std::cout << "Warning: (N-2) must be a multiple of 8 for AVX. Using N = "
-//                  << N << " instead." << '\n';
-//    }
+    if ( (N-2) % 6 != 0 ) {
+        std::cout << "Warning: Simulation will be most efficient when (N-2) is a multiple of 6 for AVX."
+                  << " Consider using N = " << N + 6 - ((N-2) % 6) << " instead." << '\n';
+    }
 
     value_type t_max;
     size_type n_runs;

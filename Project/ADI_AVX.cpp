@@ -49,9 +49,12 @@ public:
         initialize_thomas();
     }
 
-    void advance()
+    void run_simulation(value_type t_max)
     {
         /// Dirichlet boundaries; central differences in space
+
+        while( time() < t_max )
+        {
 
         value_type c1 = -c_[1];
         size_type i;
@@ -294,6 +297,8 @@ public:
         }
 
         n_step_++;
+
+        } // while time < t_max
     }
 
     void write_density(std::string const& filename) const
@@ -415,7 +420,7 @@ int main(int argc, char* argv[])
     t_total.start();
 
     if (argc < 4) {
-        std::cerr << "Usage: " << argv[0] << " D N dt (t_max)" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " D N dt (n_runs) (n_steps)" << std::endl;
         return 1;
     }
 
@@ -423,20 +428,26 @@ int main(int argc, char* argv[])
     const size_type  N  = std::stoul(argv[2]);
     const value_type dt = std::stod (argv[3]);
 
-    value_type t_max ;
+    value_type t_max;
+    size_type n_runs;
 
-    if (argc > 4) {
-        t_max = std::stoul(argv[5]);
+    if (argc > 5) {
+        t_max = dt*std::stoul(argv[5]);
     } else {
         t_max = 0.1;
     }
 
-    std::cout << "Running AVX_original_8 Simulations" << '\n';
+    if (argc > 4) {
+        n_runs = std::stoul(argv[4]);
+    } else {
+        n_runs = 1;
+    }
+
+    std::cout << "Running ADI AVX_original_8 Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << std::endl;
 
     myInt64 min_cycles = 0;
-    value_type e_rms;
-    size_type n_runs = 1;
+    value_type e_rms, final_time;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, dt);
@@ -451,9 +462,7 @@ int main(int argc, char* argv[])
         start = start_tsc();
 #endif // USE_TSC
 
-        while (system.time() < t_max) {
-            system.advance();
-        }
+        system.run_simulation(t_max);
 
 #ifdef USE_TIMER
         t.stop();
@@ -468,12 +477,17 @@ int main(int argc, char* argv[])
         system.compute_rms_error();
         e_rms = system.rms_error();
 
-        if ( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+        if( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
             min_cycles = cycles;
+        }
+
+        if( i == (n_runs-1) ) {
+            final_time = system.time();
         }
     }
 
     std::cout << "RMS Error of final run = " << e_rms << '\n';
+    std::cout << "At a final time = " << final_time << '\n';
     std::cout << "Minimum Cycles over " << n_runs << " runs = " << min_cycles << '\n';
 
     t_total.stop();
@@ -491,7 +505,6 @@ int main(int argc, char* argv[])
     }
     std::cout << "Total program execution time = " << hours << "h : " << minutes
               << "m : " << timing << "s\n" << std::endl;
-
 
     return 0;
 }
