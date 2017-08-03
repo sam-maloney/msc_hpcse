@@ -1,0 +1,76 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running RW Weak Scaling Simulations
+
+OMP_NUM_THREADS = 1
+Running RW OMP Simulations
+N = 1112	dt = 1e-09	M = 1236544000
+Actual initial # of particles = 1236542052
+Actual  final  # of particles = 1236561149
+Median RMS Error = 0.0125609
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 41555343536
+Total program execution time = 0h : 2m : 40.6011s
+
+OMP_NUM_THREADS = 2
+Running RW OMP Simulations
+N = 1568	dt = 1e-09	M = 2458624000
+Actual initial # of particles = 2458622384
+Actual  final  # of particles = 2458710954
+Median RMS Error = 0.0159593
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 47053883254
+Total program execution time = 0h : 3m : 2.94514s
+
+OMP_NUM_THREADS = 4
+Running RW OMP Simulations
+N = 2216	dt = 1e-09	M = 4910656000
+Actual initial # of particles = 4910654948
+Actual  final  # of particles = 4910732632
+Median RMS Error = 0.0190418
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 57779151942
+Total program execution time = 0h : 3m : 45.6217s
+
+OMP_NUM_THREADS = 6
+Running RW OMP Simulations
+N = 2712	dt = 1e-09	M = 7354944000
+Actual initial # of particles = 7354943776
+Actual  final  # of particles = 7354513333
+Median RMS Error = 0.0204706
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 60312988433
+Total program execution time = 0h : 3m : 56.9329s
+
+OMP_NUM_THREADS = 8
+Running RW OMP Simulations
+N = 3136	dt = 1e-09	M = 9834496000
+Actual initial # of particles = 9834491776
+Actual  final  # of particles = 9834433361
+Median RMS Error = 0.0213306
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 65120138320
+Total program execution time = 0h : 4m : 16.9719s
+
+OMP_NUM_THREADS = 10
+Running RW OMP Simulations
+N = 3504	dt = 1e-09	M = 12278016000
+Actual initial # of particles = 12278013252
+Actual  final  # of particles = 12277857554
+Median RMS Error = 0.0219012
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 68353349704
+Total program execution time = 0h : 4m : 30.905s
+
+OMP_NUM_THREADS = 12
+Running RW OMP Simulations
+N = 3840	dt = 1e-09	M = 14760964000
+Actual initial # of particles = 14760958100
+Actual  final  # of particles = 14760932494
+Median RMS Error = 0.0223252
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 82384155609
+Total program execution time = 0h : 5m : 26.5291s
+

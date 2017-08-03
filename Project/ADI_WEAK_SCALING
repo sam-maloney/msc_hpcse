@@ -1,0 +1,42 @@
+#!/bin/bash -l
+#SBATCH --job-name=ADI_WEAK_SCALING
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+echo Running ADI Weak Scaling Simulations
+echo  
+
+export KMP_AFFINITY=scatter
+
+export OMP_NUM_THREADS=1
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 1112 0.000000001 10 1000
+
+export OMP_NUM_THREADS=2
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 1568 0.000000001 10 1000
+
+export OMP_NUM_THREADS=4
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 2216 0.000000001 10 1000
+
+export OMP_NUM_THREADS=6
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 2712 0.000000001 10 1000
+
+export OMP_NUM_THREADS=8
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 3136 0.000000001 10 1000
+
+export OMP_NUM_THREADS=10
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 3504 0.000000001 10 1000
+
+export OMP_NUM_THREADS=12
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/ADI_omp.exe 1 3840 0.000000001 10 1000

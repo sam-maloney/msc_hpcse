@@ -1,0 +1,98 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PAT_ADI_SERIAL Simulations
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 10	dt = 1e-09
+RMS Error of final run = 8.98264e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2823692
+Total program execution time = 0h : 0m : 0.011371s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+18912-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 18	dt = 1e-09
+RMS Error of final run = 2.64969e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 15242974
+Total program execution time = 0h : 0m : 0.059147s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+18982-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 34	dt = 1e-09
+RMS Error of final run = 7.23245e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 67251008
+Total program execution time = 0h : 0m : 0.260544s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19052-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 66	dt = 1e-09
+RMS Error of final run = 1.89191e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 283866486
+Total program execution time = 0h : 0m : 1.09941s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19122-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 122	dt = 1e-09
+RMS Error of final run = 5.49134e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1023587130
+Total program execution time = 0h : 0m : 3.94309s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19193-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 242	dt = 1e-09
+RMS Error of final run = 9.04698e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 4150010132
+Total program execution time = 0h : 0m : 15.9843s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19265-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 482	dt = 1e-09
+RMS Error of final run = 3.0532e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 16703285892
+Total program execution time = 0h : 1m : 4.34349s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19342-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 962	dt = 1e-09
+RMS Error of final run = 1.96335e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 78589973368
+Total program execution time = 0h : 5m : 4.41685s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19444-2388t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI serial Simulations
+N = 1922	dt = 1e-09
+srun: got SIGCONT
+slurmstepd: error: *** JOB 2714393 ON nid02388 CANCELLED AT 2017-08-03T16:49:57 ***
+slurmstepd: error: *** STEP 2714393.8 ON nid02388 CANCELLED AT 2017-08-03T16:49:57 ***
+srun: forcing job termination
+pat[WARNING][0]: exit process 19675 because of signal 15
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+19675-2388t.xf
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: forcing job termination

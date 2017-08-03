@@ -1,0 +1,76 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PERF_ADI_AVX Simulations
+
+Running ADI AVX_original_8 Simulations
+N = 10	dt = 1e-09
+RMS Error of final run = 8.98263e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 556954
+Total program execution time = 0h : 0m : 0.002428s
+
+Running ADI AVX_original_8 Simulations
+N = 18	dt = 1e-09
+RMS Error of final run = 2.64969e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2030545
+Total program execution time = 0h : 0m : 0.008181s
+
+Running ADI AVX_original_8 Simulations
+N = 34	dt = 1e-09
+RMS Error of final run = 7.23255e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 7175058
+Total program execution time = 0h : 0m : 0.028722s
+
+Running ADI AVX_original_8 Simulations
+N = 66	dt = 1e-09
+RMS Error of final run = 1.89193e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 32227887
+Total program execution time = 0h : 0m : 0.12612s
+
+Running ADI AVX_original_8 Simulations
+N = 122	dt = 1e-09
+RMS Error of final run = 5.49101e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 118033356
+Total program execution time = 0h : 0m : 0.463557s
+
+Running ADI AVX_original_8 Simulations
+N = 242	dt = 1e-09
+RMS Error of final run = 9.04429e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 514134617
+Total program execution time = 0h : 0m : 2.02149s
+
+Running ADI AVX_original_8 Simulations
+N = 482	dt = 1e-09
+RMS Error of final run = 3.05331e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2113379757
+Total program execution time = 0h : 0m : 8.32419s
+
+Running ADI AVX_original_8 Simulations
+N = 962	dt = 1e-09
+RMS Error of final run = 1.96335e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 11778571009
+Total program execution time = 0h : 0m : 45.8577s
+
+Running ADI AVX_original_8 Simulations
+N = 1922	dt = 1e-09
+RMS Error of final run = 1.24641e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 63603267703
+Total program execution time = 0h : 4m : 6.77755s
+
+Running ADI AVX_original_8 Simulations
+N = 3842	dt = 1e-09
+RMS Error of final run = 0.000778715
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 288138307328
+Total program execution time = 0h : 18m : 34.8174s
+

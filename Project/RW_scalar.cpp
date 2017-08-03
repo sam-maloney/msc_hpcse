@@ -291,7 +291,7 @@ int main(int argc, char* argv[])
         system.compute_rms_error();
         e_rms = system.rms_error();
 
-        if ( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+        if ( (e_rms < 0.1) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
             min_cycles = cycles;
         }
 

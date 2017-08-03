@@ -1,0 +1,62 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running Weak Scaling Simulations
+
+OMP_NUM_THREADS = 1
+Running OMP aligned_separate Simulations
+N = 1112	dt = 1e-09
+RMS Error of final run = 4.68539e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 17036254999
+Total program execution time = 0h : 1m : 5.89947s
+
+OMP_NUM_THREADS = 2
+Running OMP aligned_separate Simulations
+N = 1568	dt = 1e-09
+RMS Error of final run = 3.68073e-06
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 21204302129
+Total program execution time = 0h : 1m : 22.9026s
+
+OMP_NUM_THREADS = 4
+Running OMP aligned_separate Simulations
+N = 2216	dt = 1e-09
+RMS Error of final run = 2.92219e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 26101815056
+Total program execution time = 0h : 1m : 41.3332s
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_separate Simulations
+N = 2712	dt = 1e-09
+RMS Error of final run = 9.77538e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 28164078259
+Total program execution time = 0h : 1m : 49.6303s
+
+OMP_NUM_THREADS = 8
+Running OMP aligned_separate Simulations
+N = 3136	dt = 1e-09
+RMS Error of final run = 0.000232596
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 30825554830
+Total program execution time = 0h : 2m : 0.417202s
+
+OMP_NUM_THREADS = 10
+Running OMP aligned_separate Simulations
+N = 3504	dt = 1e-09
+RMS Error of final run = 0.00045043
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 36256056443
+Total program execution time = 0h : 2m : 21.6203s
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_separate Simulations
+N = 3840	dt = 1e-09
+RMS Error of final run = 0.000776311
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 46046129469
+Total program execution time = 0h : 3m : 1.33997s
+

@@ -1,0 +1,96 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PERF_RW_AVX Simulations
+
+Running RW AVX Simulations
+N = 8	dt = 1e-09	M = 64000
+Actual initial # of particles = 61856
+Actual  final  # of particles = 61856
+Median RMS Error = 6.68972e-05
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 984673
+Total program execution time = 0h : 0m : 0.00471s
+
+Running RW AVX Simulations
+N = 14	dt = 1e-09	M = 196000
+Actual initial # of particles = 194088
+Actual  final  # of particles = 194089
+Median RMS Error = 0.00013896
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 4466187
+Total program execution time = 0h : 0m : 0.018774s
+
+Running RW AVX Simulations
+N = 26	dt = 1e-09	M = 676000
+Actual initial # of particles = 674216
+Actual  final  # of particles = 674235
+Median RMS Error = 0.00031678
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 17933604
+Total program execution time = 0h : 0m : 0.070953s
+
+Running RW AVX Simulations
+N = 50	dt = 1e-09	M = 2500000
+Actual initial # of particles = 2498312
+Actual  final  # of particles = 2498342
+Median RMS Error = 0.000609447
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 70529758
+Total program execution time = 0h : 0m : 0.274694s
+
+Running RW AVX Simulations
+N = 122	dt = 1e-09	M = 14884000
+Actual initial # of particles = 14882292
+Actual  final  # of particles = 14882645
+Median RMS Error = 0.00151834
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 424078593
+Total program execution time = 0h : 0m : 1.64857s
+
+Running RW AVX Simulations
+N = 242	dt = 1e-09	M = 58564000
+Actual initial # of particles = 58562444
+Actual  final  # of particles = 58561801
+Median RMS Error = 0.00304203
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 1674315443
+Total program execution time = 0h : 0m : 6.48457s
+
+Running RW AVX Simulations
+N = 482	dt = 1e-09	M = 232324000
+Actual initial # of particles = 232322132
+Actual  final  # of particles = 232329404
+Median RMS Error = 0.00599063
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 6897876151
+Total program execution time = 0h : 0m : 26.6846s
+
+Running RW AVX Simulations
+N = 962	dt = 1e-09	M = 925444000
+Actual initial # of particles = 925441312
+Actual  final  # of particles = 925440969
+Median RMS Error = 0.0111794
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 30231108504
+Total program execution time = 0h : 1m : 56.8666s
+
+Running RW AVX Simulations
+N = 1922	dt = 1e-09	M = 3694084000
+Actual initial # of particles = 3694083352
+Actual  final  # of particles = 3694083587
+Median RMS Error = 0.0178534
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 139269726014
+Total program execution time = 0h : 8m : 58.0223s
+
+Running RW AVX Simulations
+N = 3842	dt = 1e-09	M = 14760964000
+Actual initial # of particles = 14760966668
+Actual  final  # of particles = 14760747489
+Median RMS Error = 0.0223384
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 728742030923
+Total program execution time = 0h : 46m : 53.2469s
+

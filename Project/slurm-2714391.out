@@ -1,0 +1,107 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PAT_ADI_SCALAR Simulations
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 10	dt = 1e-09
+RMS Error of final run = 8.98263e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 541224
+Total program execution time = 0h : 0m : 0.002286s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9062-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 18	dt = 1e-09
+RMS Error of final run = 2.64969e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2097948
+Total program execution time = 0h : 0m : 0.008414s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9132-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 34	dt = 1e-09
+RMS Error of final run = 7.23255e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 8365634
+Total program execution time = 0h : 0m : 0.033171s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9202-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 66	dt = 1e-09
+RMS Error of final run = 1.89193e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 34351718
+Total program execution time = 0h : 0m : 0.133733s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9271-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 122	dt = 1e-09
+RMS Error of final run = 5.49101e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 124157651
+Total program execution time = 0h : 0m : 0.483019s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9341-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 242	dt = 1e-09
+RMS Error of final run = 9.04428e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 571334878
+Total program execution time = 0h : 0m : 2.22036s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9414-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 482	dt = 1e-09
+RMS Error of final run = 3.05331e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2601044956
+Total program execution time = 0h : 0m : 10.1739s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9485-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 962	dt = 1e-09
+RMS Error of final run = 1.96335e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 13410394602
+Total program execution time = 0h : 0m : 51.9244s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9567-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 1922	dt = 1e-09
+RMS Error of final run = 1.24641e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 76820056762
+Total program execution time = 0h : 4m : 57.0915s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9662-2383t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+Running ADI scalar Simulations
+N = 3842	dt = 1e-09
+srun: got SIGCONT
+slurmstepd: error: *** STEP 2714391.9 ON nid02383 CANCELLED AT 2017-08-03T16:50:14 ***
+pat[WARNING][0]: exit process 9886 because of signal 15
+slurmstepd: error: *** JOB 2714391 ON nid02383 CANCELLED AT 2017-08-03T16:50:14 ***
+srun: forcing job termination
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_scalar.exe+9886-2383t.xf
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.

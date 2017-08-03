@@ -1,0 +1,76 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PERF_ADI_SERIAL Simulations
+
+Running ADI serial Simulations
+N = 10	dt = 1e-09
+RMS Error of final run = 8.98264e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2660340
+Total program execution time = 0h : 0m : 0.011167s
+
+Running ADI serial Simulations
+N = 18	dt = 1e-09
+RMS Error of final run = 2.64969e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 15212056
+Total program execution time = 0h : 0m : 0.059933s
+
+Running ADI serial Simulations
+N = 34	dt = 1e-09
+RMS Error of final run = 7.23245e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 67465372
+Total program execution time = 0h : 0m : 0.262798s
+
+Running ADI serial Simulations
+N = 66	dt = 1e-09
+RMS Error of final run = 1.89191e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 283717286
+Total program execution time = 0h : 0m : 1.09649s
+
+Running ADI serial Simulations
+N = 122	dt = 1e-09
+RMS Error of final run = 5.49134e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1023417704
+Total program execution time = 0h : 0m : 3.94565s
+
+Running ADI serial Simulations
+N = 242	dt = 1e-09
+RMS Error of final run = 9.04698e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 4149885946
+Total program execution time = 0h : 0m : 15.9886s
+
+Running ADI serial Simulations
+N = 482	dt = 1e-09
+RMS Error of final run = 3.0532e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 16714511968
+Total program execution time = 0h : 1m : 4.38348s
+
+Running ADI serial Simulations
+N = 962	dt = 1e-09
+RMS Error of final run = 1.96335e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 78836296474
+Total program execution time = 0h : 5m : 4.92693s
+
+Running ADI serial Simulations
+N = 1922	dt = 1e-09
+RMS Error of final run = 1.24641e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 354014868042
+Total program execution time = 0h : 22m : 44.079s
+
+Running ADI serial Simulations
+N = 3842	dt = 1e-09
+RMS Error of final run = 0.000778715
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1545784109690
+Total program execution time = 1h : 39m : 11.9263s
+

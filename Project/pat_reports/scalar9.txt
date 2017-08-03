@@ -1,0 +1,163 @@
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+
+Number of PEs (MPI ranks):    1
+                           
+Numbers of PEs per Node:      1
+                           
+Numbers of Threads per PE:    1
+                           
+Number of Cores per Socket:  12
+
+Execution start time:  Thu Aug  3 17:01:15 2017
+
+System name and speed:  nid02137  2601 MHz (approx)
+
+Intel haswell CPU  Family:  6  Model: 63  Stepping:  2
+
+
+Current path to data file:
+  /scratch/snx3000/stud09/Project/../ADI_pat_scalar.exe+29340-2137t.ap2  (RTS)
+
+
+===================  Observations and suggestions  ===================
+
+
+Number of accelerators used:  0 of 1
+
+=========================  End Observations  =========================
+
+Notes for table 1:
+
+  Table option:
+    -O profile+hwpc
+  Options implied by table option:
+    -d ti%@0.95,ti,imb_ti,imb_ti%,tr,P -b gr,fu
+
+  Options for related tables:
+    -O profile_pe.th           -O profile_th_pe       
+    -O profile+src             -O load_balance        
+    -O callers                 -O callers+src         
+    -O calltree                -O calltree+src        
+
+  The Total value for each data item is the sum of the Group values.
+  The Group value for each data item is the sum of the Function values.
+    (To specify different aggregations, see: pat_help report options s1)
+
+
+
+Table 1:  Profile by Function Group and Function
+
+     PAPI_L1_TCM |     PAPI_L2_TCM |    PAPI_L3_TCM |      PAPI_TOT_CYC |Group
+                 |                 |                |                   | Function
+                
+ 258,803,668,862 | 161,272,355,675 | 38,520,460,874 | 4,392,959,545,124 |Total
+|-----------------------------------------------------------------------------
+| 258,803,668,862 | 161,272,355,675 | 38,520,460,874 | 4,392,959,545,124 |ETC
+||----------------------------------------------------------------------------
+|| 258,803,668,862 | 161,272,355,675 | 38,520,460,874 | 4,392,959,545,124 |==LO_MEMORY== ADI_pat_scalar.exe
+|=============================================================================
+
+Notes for table 2:
+
+  Table option:
+    -O program_time
+  Options implied by table option:
+    -d pt,hm -b to
+
+  The value shown for Process HiMem is calculated from information in
+  the /proc/self/numa_maps files captured near the end of the program. 
+  It is the total size of all pages, including huge pages, that were
+  actually mapped into physical memory from both private and shared
+  memory segments.
+
+Table 2:  Wall Clock Time, Memory High Water Mark
+
+ Process Time |  Process |Total
+              |    HiMem |
+              | (MBytes) |
+             
+ 1,258.666009 |      6.2 |Total
+
+========================  Additional details  ========================
+
+Experiment:  trace
+
+Original path to data file:
+  /scratch/snx3000/stud09/ADI_pat_scalar.exe+29340-2137t.xf  (RTS)
+
+Original program:  /scratch/snx3000/stud09/Project/ADI_scalar.exe
+
+Instrumented with:
+  pat_build -w -T _ZN11Diffusion2D14run_simulationEd ADI_scalar.exe \
+    ADI_pat_scalar.exe
+
+Instrumented program:  /scratch/snx3000/stud09/Project/ADI_pat_scalar.exe
+
+Program invocation:
+  /scratch/snx3000/stud09/Project/ADI_pat_scalar.exe 1 3842 0.000000001 10 1000
+
+Exit Status:  0 for 1 PE
+
+Memory pagesize:  4 KiB
+
+Memory hugepagesize:  Not Available
+
+Accelerator Model: Nvidia P100-PCIE-16GB Memory: 16.00
+
+Accelerator Driver Version: 375.66.0
+
+Programming environment:  INTEL
+
+Runtime environment variables:
+  ATP_HOME=/opt/cray/pe/atp/2.0.4
+  ATP_IGNORE_SIGTERM=1
+  ATP_MRNET_COMM_PATH=/opt/cray/pe/atp/2.0.4/libexec/atp_mrnet_commnode_wrapper
+  ATP_POST_LINK_OPTS=-Wl,-L/opt/cray/pe/atp/2.0.4/libApp/ 
+  CRAYPE_VERSION=2.5.8
+  DVS_VERSION=0.9.0
+  EBVERSIONNANO=2.7.0
+  EBVERSIONNCURSES=6.0
+  INTEL_MAJOR_VERSION=17.0
+  INTEL_MINOR_VERSION=1.132
+  INTEL_VERSION=17.0.1.132
+  MODULE_VERSION=3.2.10.5
+  MODULE_VERSION_STACK=3.2.10.5
+  MPICH_ABORT_ON_ERROR=1
+  MPICH_DIR=/opt/cray/pe/mpt/7.5.0/gni/mpich-intel/16.0
+  OMP_NUM_THREADS=10
+  PATH=/opt/cray/pe/perftools/6.4.3/bin:/opt/cray/pe/papi/5.5.0.1/bin:/apps/common/UES/jenkins/SLES12/easybuild/software/nano/2.7.0/bin:/apps/daint/UES/jenkins/6.0.UP02/gpu/easybuild/software/ncurses/6.0/bin:/opt/cray/rca/2.0.10_g66b76b7-2.51/bin:/opt/cray/alps/6.2.7-22.3/sbin:/opt/cray/job/2.0.2_g98a4850-2.43/bin:/opt/cray/pe/pmi/5.0.10-1.0000.11050.0.0.ari/bin:/apps/daint/UES/xalt/0.7.6/bin:/opt/slurm/17.02.3/bin:/opt/cray/pe/mpt/7.5.0/gni/bin:/opt/cray/pe/craype/2.5.8/bin:/opt/intel/compilers_and_libraries_2017.1.132/linux/bin/intel64:/opt/intel/compilers_and_libraries_2017.1.132/linux/mpi/intel64/bin:/opt/intel/debugger_2017/gdb/intel64_mic/bin:/opt/cray/elogin/eswrap/2.0.11-2.2/bin:/opt/cray/pe/modules/3.2.10.5/bin:/opt/slurm/default/bin:/apps/daint/system/bin:/apps/common/system/bin:/users/stud09/bin:/usr/local/bin:/usr/bin:/bin:/usr/bin/X11:/usr/lib/mit/bin:/usr/lib/mit/sbin:/opt/cray/pe/bin
+  PAT_BUILD_PAPI_BASEDIR=/opt/cray/pe/papi/5.5.0.1
+  PAT_REPORT_PRUNE_NAME=_cray$mt_start_,__cray_hwpc_,f_cray_hwpc_,cstart,__pat_,pat_region_,PAT_,OMP.slave_loop,slave_entry,_new_slave_entry,THREAD_POOL_join,__libc_start_main,_start,__start,start_thread,__wrap_,UPC_ADIO_,_upc_,upc_,__caf_,__pgas_,syscall
+  PAT_RT_CALLSTACK=0
+  PAT_RT_PERFCTR=PAPI_TOT_CYC,PAPI_L3_TCM,PAPI_L2_TCM,PAPI_L1_TCM
+  PAT_RT_TRACE_FUNCTION_ARGS=0
+  PERFTOOLS_VERSION=6.4.3
+  PMI_CONTROL_PORT=30923
+  PMI_CRAY_NO_SMP_ORDER=0
+  PMI_NO_FORK=1
+
+Report time environment variables:
+    CRAYPAT_ROOT=/opt/cray/pe/perftools/6.4.3
+    PAT_REPORT_PRUNE_NAME=_cray$mt_start_,__cray_hwpc_,f_cray_hwpc_,cstart,__pat_,pat_region_,PAT_,OMP.slave_loop,slave_entry,_new_slave_entry,THREAD_POOL_join,__libc_start_main,_start,__start,start_thread,__wrap_,UPC_ADIO_,_upc_,upc_,__caf_,__pgas_,syscall
+
+Number of MPI control variables collected:  0
+
+  (To see the list, specify: -s mpi_cvar=show)
+
+Report command line options:  <none>
+
+Operating system:
+  Linux 3.12.60-52.49.1_2.0-cray_ari_c #1 SMP Wed Jun 28 17:45:15 UTC 2017
+
+Hardware performance counter events:
+   PAPI_L1_TCM   Level 1 cache misses
+   PAPI_L2_TCM   Level 2 cache misses
+   PAPI_L3_TCM   Level 3 cache misses
+   PAPI_TOT_CYC  Total cycles
+
+Instrumentation overhead could not be estimated.
+
+Number of traced functions:  12
+
+  (To see the list, specify:  -s traced_functions=show)
+

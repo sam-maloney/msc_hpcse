@@ -1,0 +1,126 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PAT_ADI_AVX Simulations
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 10	dt = 1e-09
+RMS Error of final run = 8.98263e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 504536
+Total program execution time = 0h : 0m : 0.002144s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12387-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 18	dt = 1e-09
+RMS Error of final run = 2.64969e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1846324
+Total program execution time = 0h : 0m : 0.007503s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12461-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 34	dt = 1e-09
+RMS Error of final run = 7.23255e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 7538576
+Total program execution time = 0h : 0m : 0.029897s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12540-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 66	dt = 1e-09
+RMS Error of final run = 1.89193e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 31545757
+Total program execution time = 0h : 0m : 0.123624s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12607-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 122	dt = 1e-09
+RMS Error of final run = 5.49101e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 116975944
+Total program execution time = 0h : 0m : 0.455094s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12675-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 242	dt = 1e-09
+RMS Error of final run = 9.04429e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 512278891
+Total program execution time = 0h : 0m : 1.98873s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12799-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 482	dt = 1e-09
+RMS Error of final run = 3.05331e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 2068498315
+Total program execution time = 0h : 0m : 8.05948s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12869-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 962	dt = 1e-09
+RMS Error of final run = 1.96335e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 11717023075
+Total program execution time = 0h : 0m : 45.4968s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+12943-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 1922	dt = 1e-09
+RMS Error of final run = 1.24641e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 64255979136
+Total program execution time = 0h : 4m : 8.50469s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+13039-1926t.xf
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 3842	dt = 1e-09
+RMS Error of final run = 0.000778715
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 287468011196
+Total program execution time = 0h : 18m : 31.4078s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+13243-1926t.xf

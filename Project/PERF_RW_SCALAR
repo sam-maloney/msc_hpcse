@@ -1,0 +1,23 @@
+#!/bin/bash -l
+#SBATCH --job-name=PERF_RW_SCALAR
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+echo Running PERF_RW_SCALAR Simulations
+echo  
+
+srun $PROJ/RW_scalar.exe 1 8 64000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 14 196000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 26 676000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 50 2500000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 122 14884000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 242 58564000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 482 232324000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 962 925444000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 1922 3694084000 0.000000001 10 50
+srun $PROJ/RW_scalar.exe 1 3842 14760964000 0.000000001 10 50
