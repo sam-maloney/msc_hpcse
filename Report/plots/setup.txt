@@ -1,0 +1,43 @@
+***** ADI *****
+n_steps = 1000
+n_runs = 10
+
+For Strong Scaling Plot
+dt = 1e-9 (0.000000001)
+	AVX
+N = 3842
+	OMP
+N = 3840
+
+For Weak Scaling Plot
+threads    = {     12,      11,      10,       9,       8,       7,...}
+N          = {   3840,    3680,    3504,    3328,    3136,    2936,...}
+nodes/thrd = {1228800, 1231127, 1227802, 1230620, 1229312, 1231442,...}
+threads    = {      6,       5,       4,       3,       2,       1}
+N          = {   2712,    2480,    2216,    1920,    1568,    1112}
+nodes/thrd = {1225824, 1230080, 1227664, 1228800, 1229312, 1236544}
+
+For Runtime and Roofline Plots (Serial, Scalar, and AVX)
+N = {3842, 1922, 962, 482, 242, 122, 66, 34, 18, 10}
+
+
+***** RW *****
+n_steps = 50
+n_runs = 10
+dt = 1e-9 (0.000000001)
+M = 1000*N^2
+need N-2 a multiple of 6 for AVX code
+
+For Strong Scaling Plot
+N = 3842
+
+For Weak Scaling Plot
+threads    = {     12,      11,      10,       9,       8,       7,...}
+N          = {   3840,    3680,    3504,    3328,    3136,    2936,...}
+nodes/thrd = {1228800, 1231127, 1227802, 1230620, 1229312, 1231442,...}
+threads    = {      6,       5,       4,       3,       2,       1}
+N          = {   2712,    2480,    2216,    1920,    1568,    1112}
+nodes/thrd = {1225824, 1230080, 1227664, 1228800, 1229312, 1236544}
+
+For Runtime and Roofline Plots (Serial, Scalar, and AVX)
+N = {8, 14, 26, 50, 122, 242, 482, 962, 1922, 3842}
