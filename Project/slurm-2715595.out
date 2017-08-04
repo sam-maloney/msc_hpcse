@@ -27,3 +27,10 @@ Total program execution time = 0h : 25m : 8.28619s
 
 Running RW Scalar Simulations
 N = 50	dt = 1e-09	M = 2500000
+RMS Error of final run = 7.92189e-06
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 5581455849694
+Total program execution time = 5h : 57m : 50.2657s
+
+Running RW Scalar Simulations
+N = 122	dt = 1e-09	M = 14884000
