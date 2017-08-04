@@ -4,7 +4,8 @@ right = 8;
 bottom = -2;
 top = 5;
 
-memory_bandwidth = 68; % GB/s
+% memory_bandwidth = 68; % GB/s
+memory_bandwidth = 11+14.5; % GB/s
 clock_speed = 2.6; % GHz
 scalar_peak = 4;
 vector_peak = 4*scalar_peak;
@@ -13,15 +14,19 @@ vector_peak = 4*scalar_peak;
 betaRAM = memory_bandwidth*2^30/(clock_speed*10^9);
 
 % betas for caches
-betaL3 = 64/6.3 + 64/8.4;
-betaL2 = 64/6.1 + 64/2.2;
-betaL1 = 64/0.5;
+% betaL3 = 64/6.3 + 64/8.4;
+% betaL2 = 64/6.1 + 64/2.2;
+% betaL1 = 64/0.5;
+% betaL3 = 4*8;
+betaL3 = 64/6.1 + 64/2.2;
+betaL2 = 8*8;
+betaL1 = 12*8;
 
 I = [2^left 2^right];
 MRAM = betaRAM*I;
-ML3 = betaL3*I;
-ML2 = betaL2*I;
-ML1 = betaL1*I;
+ML3  = betaL3*I;
+ML2  = betaL2*I;
+ML1  = betaL1*I;
 pi_s = [scalar_peak scalar_peak];
 pi_v = [vector_peak vector_peak];
 
@@ -104,14 +109,22 @@ set(h,'Color',[0.9 0.9 0.9]);
 % plot rooflines
 plot(log2(I),log2(pi_s),'-k');
 plot(log2(I),log2(pi_v),'-k');
-plot(log2(I),log2(MRAM),'-k');
-plot(log2(I),log2(ML3), '-k');
-plot(log2(I),log2(ML2), '-k');
-% plot(log2(I),log2(ML1), '-k');
+plot(log2(I),log2(MRAM),'-r');
+plot(log2(I),log2(ML3), '-b');
+plot(log2(I),log2(ML2), '-g');
+plot(log2(I),log2(ML1), '-k');
+
+plot(log2(I_RAM_AVX),log2(perf_AVX),'-g.');
+plot(log2(I_RAM_scalar),log2(perf_scalar),'-b.');
+plot(log2(I_RAM_serial),log2(perf_serial),'-r.');
 
 plot(log2(I_L3_AVX),log2(perf_AVX),'-g.');
 plot(log2(I_L3_scalar),log2(perf_scalar),'-b.');
 plot(log2(I_L3_serial),log2(perf_serial),'-r.');
+
+plot(log2(I_L2_AVX),log2(perf_AVX),'-g.');
+plot(log2(I_L2_scalar),log2(perf_scalar),'-b.');
+plot(log2(I_L2_serial),log2(perf_serial),'-r.');
 
 % h = text(log2(0.125),log2(4.4),'L3 Bandwidth');
 % set(h, 'rotation', 57);

@@ -1,3 +1,11 @@
 https://stackoverflow.com/questions/36167517/m256d-transpose4-equivalent
 
 https://www.sitmo.com/?p=1206
+
+http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2690%20v3.html
+
+http://ark.intel.com/products/81713/Intel-Xeon-Processor-E5-2690-v3-30M-Cache-2_60-GHz
+
+http://www.7-cpu.com/cpu/Haswell.html
+
+https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-optimization-manual.html
