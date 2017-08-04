@@ -1,0 +1,62 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running ADI Weak Scaling 2 Simulations
+
+OMP_NUM_THREADS = 1
+Running OMP aligned_separate Simulations
+N = 2216	dt = 1e-10
+RMS Error of final run = 2.9482e-08
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 93765710777
+Total program execution time = 0h : 6m : 1.69807s
+
+OMP_NUM_THREADS = 2
+Running OMP aligned_separate Simulations
+N = 3136	dt = 1e-10
+RMS Error of final run = 2.36795e-07
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 100701516018
+Total program execution time = 0h : 6m : 29.1191s
+
+OMP_NUM_THREADS = 4
+Running OMP aligned_separate Simulations
+N = 4432	dt = 1e-10
+RMS Error of final run = 1.88428e-06
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 115744240933
+Total program execution time = 0h : 7m : 28.8622s
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_separate Simulations
+N = 5432	dt = 1e-10
+RMS Error of final run = 6.37639e-06
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 116708986235
+Total program execution time = 0h : 7m : 34.3825s
+
+OMP_NUM_THREADS = 8
+Running OMP aligned_separate Simulations
+N = 6272	dt = 1e-10
+RMS Error of final run = 1.50824e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 128851914467
+Total program execution time = 0h : 8m : 24.9992s
+
+OMP_NUM_THREADS = 10
+Running OMP aligned_separate Simulations
+N = 7008	dt = 1e-10
+RMS Error of final run = 2.92953e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 158370698795
+Total program execution time = 0h : 10m : 21.8736s
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 223639209042
+Total program execution time = 0h : 14m : 30.2727s
+
