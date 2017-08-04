@@ -1,0 +1,86 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running ADI Strong Scaling 2 Simulations
+
+OMP_NUM_THREADS = 1
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 1628927133144
+Total program execution time = 1h : 44m : 57.9147s
+
+OMP_NUM_THREADS = 2
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 875899735704
+Total program execution time = 0h : 56m : 21.7423s
+
+OMP_NUM_THREADS = 4
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 452355152308
+Total program execution time = 0h : 29m : 27.0883s
+
+OMP_NUM_THREADS = 6
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 327365800187
+Total program execution time = 0h : 21m : 9.62474s
+
+OMP_NUM_THREADS = 8
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 254374423524
+Total program execution time = 0h : 16m : 32.6856s
+
+OMP_NUM_THREADS = 10
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 231848527750
+Total program execution time = 0h : 15m : 2.78984s
+
+OMP_NUM_THREADS = 12
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 220340724398
+Total program execution time = 0h : 14m : 18.6799s
+
+OMP_NUM_THREADS = 16
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 237683005100
+Total program execution time = 0h : 15m : 28.5937s
+
+OMP_NUM_THREADS = 20
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 218365048581
+Total program execution time = 0h : 14m : 11.8579s
+
+OMP_NUM_THREADS = 24
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 226347044864
+Total program execution time = 0h : 14m : 44.7981s
+
