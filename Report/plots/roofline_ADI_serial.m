@@ -1,7 +1,7 @@
 clear;
 left = -5;
-right = 7;
-bottom = -1;
+right = 9;
+bottom = -2;
 top = 5;
 
 memory_bandwidth = 68; % GB/s
@@ -24,6 +24,15 @@ ML2 = betaL2*I;
 ML1 = betaL1*I;
 pi_s = [scalar_peak scalar_peak];
 pi_v = [vector_peak vector_peak];
+
+N = [10 18 34 66 122 242 482 962 1922 3842];
+perf = [0.734 0.526 0.480 0.459 0.449 0.443 0.441 0.374 0.333 0.305];
+I_L2  = [38.730 139.276 283.299 1.017 0.797...
+         0.113 0.139 0.111 0.095 0.075];
+I_L3  = [77.529 319.366 1040.724 3515.800 173.098...
+         1.444 0.379 0.629 0.132 0.111];
+I_RAM = [324.468 1279.427 5348.837 20733.198 73016.277...
+         188433.814 989767.842 16011.485 2.335 1.913];
 
 hold on;
 
@@ -76,10 +85,11 @@ set(h,'Color',[0.9 0.9 0.9]);
 plot(log2(I),log2(pi_s),'-k');
 plot(log2(I),log2(pi_v),'-k');
 plot(log2(I),log2(MRAM),'-k');
-plot(log2(I),log2(ML3), '-k');
-plot(log2(I),log2(ML2), '-k');
-plot(log2(I),log2(ML1), '-k');
+% plot(log2(I),log2(ML3), '-k');
+% plot(log2(I),log2(ML2), '-k');
+% plot(log2(I),log2(ML1), '-k');
 
+plot(log2(I_RAM),log2(perf),'-b.');
 
 % h = text(log2(0.125),log2(4.4),'L3 Bandwidth');
 % set(h, 'rotation', 57);
@@ -102,13 +112,13 @@ ylabel('Performance [flops/cycle]');
 set(get(gca,'YLabel'),'Rotation',0);
 ylabh = get(gca,'YLabel');
 vertOffset = (top - bottom)*0.53;
-horzOffset = (right - left)*0.3;
+horzOffset = (right - left)*0.305;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
 h = title('Xeon E5-2690 v3','FontSize', 15);
 vertOffset = (top - bottom)*0.08;
-horzOffset = (right - left)*-0.305;
+horzOffset = (right - left)*-0.335;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
 
 set(gcf,'color','w');
