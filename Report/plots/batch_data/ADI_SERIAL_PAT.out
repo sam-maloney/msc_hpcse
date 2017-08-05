@@ -124,3 +124,16 @@ Total program execution time = 1h : 37m : 32.8145s
 
 Experiment data file written:
 /scratch/snx3000/stud09/ADI_pat_serial.exe+12057-2184t.xf
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI serial Simulations
+N = 7682	dt = 1e-10
+RMS Error of final run = 5.07283e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 6819139583116
+Total program execution time = 7h : 17m : 30.281s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_serial.exe+3710-2476t.xf

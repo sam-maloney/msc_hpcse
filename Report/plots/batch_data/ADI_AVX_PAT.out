@@ -124,3 +124,16 @@ Total program execution time = 0h : 18m : 31.4078s
 
 Experiment data file written:
 /scratch/snx3000/stud09/ADI_pat_AVX.exe+13243-1926t.xf
+
+CrayPat/X:  Version 6.4.3 Revision d7ee81a  10/25/16 14:17:31
+pat[WARNING][0]: the environment variable 'PAT_RT_TRACE_FUNCTION_ARGS' is deprecated and not supported in the next release
+pat[WARNING][0]: no call stack information will be collected
+Running ADI AVX_original_8 Simulations
+N = 7682	dt = 1e-10
+RMS Error of final run = 5.07283e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 1179012624533
+Total program execution time = 1h : 15m : 56.9678s
+
+Experiment data file written:
+/scratch/snx3000/stud09/ADI_pat_AVX.exe+17798-4516t.xf

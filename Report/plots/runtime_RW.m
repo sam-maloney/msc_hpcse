@@ -10,14 +10,14 @@ cycles_AVX    = [984673 4466187 17933604 70529758 424078593 ...
                  1674315443 6897876151 30231108504 139269726014 728742030923];
 cycles_scalar = [1928770 7297062 29534200 117667172 742727438 ...
                  3119875776 14822367366 93828448269 804670339872 3523207716584];
-cycles_serial = [];
+cycles_serial = [2819604252 30515687408 392094146074 5581455849694];
 
 loglog(N,cycles_AVX,'-g.');
              
 hold on;
 
 loglog(N,cycles_scalar,'-b.');
-% loglog(N,cycles_serial,'-r.');
+loglog(N(1:length(cycles_serial)),cycles_serial,'-r.');
 
 xlim([left right]);
 ylim([bottom top]);

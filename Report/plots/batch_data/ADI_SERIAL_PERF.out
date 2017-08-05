@@ -74,3 +74,10 @@ At a final time = 1e-06
 Minimum Cycles over 10 runs = 1545784109690
 Total program execution time = 1h : 39m : 11.9263s
 
+Running ADI serial Simulations
+N = 7682	dt = 1e-10
+RMS Error of final run = 5.07283e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 6881886399924
+Total program execution time = 7h : 21m : 31.1748s
+

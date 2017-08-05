@@ -74,3 +74,10 @@ At a final time = 1e-06
 Minimum Cycles over 10 runs = 288138307328
 Total program execution time = 0h : 18m : 34.8174s
 
+Running ADI AVX_original_8 Simulations
+N = 7682	dt = 1e-10
+RMS Error of final run = 5.07283e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 1177871815120
+Total program execution time = 1h : 16m : 10.6406s
+
