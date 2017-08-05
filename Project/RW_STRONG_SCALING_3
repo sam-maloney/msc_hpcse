@@ -1,0 +1,42 @@
+#!/bin/bash -l
+#SBATCH --job-name=RW_STRONG_SCALING_3
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+echo Running RW Strong Scaling 3 Simulations
+echo  
+
+export KMP_AFFINITY=scatter
+
+export OMP_NUM_THREADS=6
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=8
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=10
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=12
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=16
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=20
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50
+
+export OMP_NUM_THREADS=24
+echo OMP_NUM_THREADS = $OMP_NUM_THREADS
+srun $PROJ/RW_omp.exe 1 7682 59013124000 0.0000000001 10 50

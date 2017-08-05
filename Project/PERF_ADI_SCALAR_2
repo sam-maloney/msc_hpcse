@@ -1,0 +1,14 @@
+#!/bin/bash -l
+#SBATCH --job-name=PERF_ADI_SCALAR_2
+#SBATCH --mail-user=maloneys@student.ethz.ch
+#SBATCH --time=24:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-core=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=normal
+#SBATCH --constraint=gpu
+echo Running PERF_ADI_SCALAR_2 Simulations
+echo  
+
+srun $PROJ/ADI_scalar.exe 1 7682 0.0000000001 10 1000

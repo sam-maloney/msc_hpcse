@@ -2,8 +2,12 @@ ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
 perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
 perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
 
-Running RW Strong Scaling 2 Simulations
+Running PERF_ADI_SCALAR_2 Simulations
 
-OMP_NUM_THREADS = 1
-Running RW OMP Simulations
-N = 7682	dt = 1e-10	M = 59013124000
+Running ADI scalar Simulations
+N = 7682	dt = 1e-10
+RMS Error of final run = 5.07283e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 1295200222422
+Total program execution time = 1h : 23m : 22.0028s
+
