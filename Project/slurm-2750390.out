@@ -1,0 +1,85 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PERF_ADI_AVX_ALIGNED Simulations
+
+Running OMP aligned_separate Simulations
+N = 8	dt = 1e-09
+RMS Error of final run = 1.43982e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 295892
+Total program execution time = 0h : 0m : 0.00143s
+
+Running OMP aligned_separate Simulations
+N = 16	dt = 1e-09
+RMS Error of final run = 3.37726e-08
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1241671
+Total program execution time = 0h : 0m : 0.005353s
+
+Running OMP aligned_separate Simulations
+N = 32	dt = 1e-09
+RMS Error of final run = 8.1799e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 5257128
+Total program execution time = 0h : 0m : 0.020946s
+
+Running OMP aligned_separate Simulations
+N = 64	dt = 1e-09
+RMS Error of final run = 2.01308e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 23460898
+Total program execution time = 0h : 0m : 0.092539s
+
+Running OMP aligned_separate Simulations
+N = 120	dt = 1e-09
+RMS Error of final run = 5.67866e-10
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 91304353
+Total program execution time = 0h : 0m : 0.358718s
+
+Running OMP aligned_separate Simulations
+N = 240	dt = 1e-09
+RMS Error of final run = 9.51598e-11
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 411589800
+Total program execution time = 0h : 0m : 1.61035s
+
+Running OMP aligned_separate Simulations
+N = 480	dt = 1e-09
+RMS Error of final run = 2.97664e-09
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 1665246779
+Total program execution time = 0h : 0m : 6.50092s
+
+Running OMP aligned_separate Simulations
+N = 960	dt = 1e-09
+RMS Error of final run = 1.93897e-07
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 10819272179
+Total program execution time = 0h : 0m : 42.5074s
+
+srun: Job step creation temporarily disabled, retrying
+srun: Job step created
+Running OMP aligned_separate Simulations
+N = 1920	dt = 1e-09
+RMS Error of final run = 1.23866e-05
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 64107928185
+Total program execution time = 0h : 4m : 11.1385s
+
+Running OMP aligned_separate Simulations
+N = 3840	dt = 1e-09
+RMS Error of final run = 0.000776311
+At a final time = 1e-06
+Minimum Cycles over 10 runs = 310692161807
+Total program execution time = 0h : 20m : 0.43298s
+
+Running OMP aligned_separate Simulations
+N = 7680	dt = 1e-10
+RMS Error of final run = 5.06494e-05
+At a final time = 1e-07
+Minimum Cycles over 10 runs = 1586284497583
+Total program execution time = 1h : 42m : 7.27815s
+

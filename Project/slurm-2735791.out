@@ -6,3 +6,8 @@ Running PERF_RW_SERIAL_2 Simulations
 
 Running RW Scalar Simulations
 N = 122	dt = 1e-09	M = 14884000
+RMS Error of final run = 7.92881e-06
+At a final time = 5e-08
+Minimum Cycles over 1 runs = 202781805321310
+Total program execution time = 21h : 39m : 54.2946s
+

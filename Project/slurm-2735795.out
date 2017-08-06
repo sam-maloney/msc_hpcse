@@ -6,3 +6,8 @@ Running PERF_RW_SERIAL_4 Simulations
 
 Running RW Scalar Simulations
 N = 482	dt = 1e-09	M = 232324000
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** JOB 2735795 ON nid04130 CANCELLED AT 2017-08-05T23:43:26 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2735795.0 ON nid04130 CANCELLED AT 2017-08-05T23:43:26 DUE TO TIME LIMIT ***
+srun: got SIGCONT
+srun: forcing job termination
