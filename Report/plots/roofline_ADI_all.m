@@ -1,6 +1,6 @@
 clear;
-left = -7;
-right = 8;
+left = -4;
+right = 17;
 bottom = -2;
 top = 5;
 
@@ -16,10 +16,6 @@ betaRAM = memory_bandwidth*2^30/(clock_speed*10^9);
 % betas for caches
 betaL3 = 64/6.3 + 64/8.4;
 betaL2 = 64/6.1 + 64/2.2;
-% betaL1 = 64/0.5;
-% betaL3 = 4*8;
-% betaL3 = 64/6.1 + 64/2.2;
-% betaL2 = 8*8;
 betaL1 = 12*8;
 
 I = [2^left 2^right];
@@ -109,65 +105,56 @@ set(h,'Color',[0.9 0.9 0.9]);
 % plot rooflines
 plot(log2(I),log2(pi_s),'-k');
 plot(log2(I),log2(pi_v),'-k');
-plot(log2(I),log2(MRAM),'-r');
-plot(log2(I),log2(ML3), '-b');
-plot(log2(I),log2(ML2), '-g');
-plot(log2(I),log2(ML1), '-k');
+plot(log2(I),log2(MRAM),'-k');
+% plot(log2(I),log2(ML3), '-b');
+% plot(log2(I),log2(ML2), '-g');
+% plot(log2(I),log2(ML1), '-k');
 
 fac = 1/4;
 
-plot(log2(fac*I_RAM_AVX),log2(perf_AVX),'-g.');
-plot(log2(fac*I_RAM_scalar),log2(perf_scalar),'-b.');
-plot(log2(fac*I_RAM_serial),log2(perf_serial),'-r.');
+h1 = plot(log2(fac*I_RAM_AVX),log2(perf_AVX),'-g.');
+h2 = plot(log2(fac*I_RAM_scalar),log2(perf_scalar),'-b.');
+h3 = plot(log2(fac*I_RAM_serial),log2(perf_serial),'-r.');
 
-plot(log2(fac*I_L3_AVX),log2(perf_AVX),'-g.');
-plot(log2(fac*I_L3_scalar),log2(perf_scalar),'-b.');
-plot(log2(fac*I_L3_serial),log2(perf_serial),'-r.');
-
-plot(log2(fac*I_L2_AVX),log2(perf_AVX),'-g.');
-plot(log2(fac*I_L2_scalar),log2(perf_scalar),'-b.');
-plot(log2(fac*I_L2_serial),log2(perf_serial),'-r.');
-
-% plot(log2(I_RAM_AVX),log2(perf_AVX),'-g.');
-% plot(log2(I_RAM_scalar),log2(perf_scalar),'-b.');
-% plot(log2(I_RAM_serial),log2(perf_serial),'-r.');
+% plot(log2(fac*I_L3_AVX),log2(perf_AVX),'-g.');
+% plot(log2(fac*I_L3_scalar),log2(perf_scalar),'-b.');
+% plot(log2(fac*I_L3_serial),log2(perf_serial),'-r.');
 % 
-% plot(log2(I_L3_AVX),log2(perf_AVX),'-g.');
-% plot(log2(I_L3_scalar),log2(perf_scalar),'-b.');
-% plot(log2(I_L3_serial),log2(perf_serial),'-r.');
-% 
-% plot(log2(I_L2_AVX),log2(perf_AVX),'-g.');
-% plot(log2(I_L2_scalar),log2(perf_scalar),'-b.');
-% plot(log2(I_L2_serial),log2(perf_serial),'-r.');
+% plot(log2(fac*I_L2_AVX),log2(perf_AVX),'-g.');
+% plot(log2(fac*I_L2_scalar),log2(perf_scalar),'-b.');
+% plot(log2(fac*I_L2_serial),log2(perf_serial),'-r.');
 
 % h = text(log2(0.125),log2(4.4),'L3 Bandwidth');
 % set(h, 'rotation', 57);
 % 
 % h = text(log2(0.52),log2(4.1),'RAM Bandwidth');
 % set(h, 'rotation', 58);
-% 
-% text(log2(270),log2(2.5),'Scalar Peak');
-% text(log2(390),log2(4.5),'AVX Peak');
+
+text(log2(8),log2(4.7),'Scalar Peak');
+text(log2(10),log2(18.5),'AVX Peak');
+
+text(log2(1.8),log2(1.2),'AVX');
+text(log2(1.45),log2(0.63),'Scalar');
+text(log2(1.1),log2(0.4),'Baseline');
 
 hold off;
 
-% legh = legend([h3 h2 h1],'AVX + ILP','AVX',...
-%                   'Scalar','Location','SouthEast');
+% legh = legend([h1 h2 h3],'AVX','Scalar','Baseline','Location','NorthEast');
 % vertOffset = (top - bottom)*0.02;
 % set(legh,'Position',get(legh,'Position') + [0 vertOffset 0 0]);
 
-xlabel('Operational Intensity [flops/byte]');
+xlabel('Operational Intensity w.r.t RAM [flops/byte]');
 ylabel('Performance [flops/cycle]');
 set(get(gca,'YLabel'),'Rotation',0);
 ylabh = get(gca,'YLabel');
-vertOffset = (top - bottom)*0.53;
+vertOffset = (top - bottom)*0.52;
 horzOffset = (right - left)*0.305;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
-h = title('Xeon E5-2690 v3','FontSize', 15);
+h = title('ADI Roofline, All Versions','FontSize', 15);
 vertOffset = (top - bottom)*0.08;
-horzOffset = (right - left)*-0.335;
+horzOffset = (right - left)*-0.222;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
 
 set(gcf,'color','w');

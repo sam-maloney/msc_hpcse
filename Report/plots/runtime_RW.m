@@ -1,5 +1,5 @@
 clear;
-top = 10^13;
+top = 10^14;
 bottom = 2*10^5;
 right = 10^4;
 left = 5*10^0;
@@ -10,7 +10,8 @@ cycles_AVX    = [984673 4466187 17933604 70529758 424078593 ...
                  1674315443 6897876151 30231108504 139269726014 728742030923];
 cycles_scalar = [1928770 7297062 29534200 117667172 742727438 ...
                  3119875776 14822367366 93828448269 804670339872 3523207716584];
-cycles_serial = [2819604252 30515687408 392094146074 5581455849694];
+cycles_serial = [2819604252 30515687408 392094146074 5581455849694 ...
+                 202781805321310];
 
 loglog(N,cycles_AVX,'-g.');
              
@@ -36,14 +37,14 @@ xlabel('Grid Size N');
 ylabel('Runtime [cycles]');
 set(get(gca,'YLabel'),'Rotation',0);
 ylabh = get(gca,'YLabel');
-vertOffset = (top - bottom)*1.1;
-horzOffset = (right - left)*0.0006;
+vertOffset = (top - bottom)*1.5;
+horzOffset = (right - left)*0.00056;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
 h = title('RW on Single Core','FontSize', 15);
-vertOffset = (top - bottom)*3.0;
-horzOffset = (right - left)*-0.0207;
+vertOffset = (top - bottom)*3.5;
+horzOffset = (right - left)*-0.0208;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
 
 set(gcf,'color','w');

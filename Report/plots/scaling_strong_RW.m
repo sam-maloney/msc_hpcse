@@ -35,14 +35,14 @@ xlabel('Number of Cores');
 ylabel('Speedup Factor');
 set(get(gca,'YLabel'),'Rotation',0);
 ylabh = get(gca,'YLabel');
-vertOffset = (top - bottom)*0.53;
+vertOffset = (top - bottom)*0.52;
 horzOffset = (right - left)*0.155;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
 h = title('RW Strong Scaling, N = 7682','FontSize', 15);
 vertOffset = (top - bottom)*0.08;
-horzOffset = (right - left)*-0.177;
+horzOffset = (right - left)*-0.18;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
 
 set(gcf,'color','w');

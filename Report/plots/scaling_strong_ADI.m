@@ -35,7 +35,7 @@ xlabel('Number of Cores');
 ylabel('Speedup Factor');
 set(get(gca,'YLabel'),'Rotation',0);
 ylabh = get(gca,'YLabel');
-vertOffset = (top - bottom)*0.53;
+vertOffset = (top - bottom)*0.52;
 horzOffset = (right - left)*0.155;
 set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 
