@@ -22,6 +22,8 @@ typedef std::size_t size_type;
 typedef int32_t particle_type;
 typedef uint64_t M_type;
 
+particle_type n_parts = 0;
+
 #ifndef M_PI
     constexpr value_type M_PI = 3.14159265358979323846;
 #endif // M_PI
@@ -69,7 +71,7 @@ public:
         /// Dirichlet boundaries
         for(size_type i = 1; i < N_-1; ++i) {
             for(size_type j = 1; j < N_-1; ++j) {
-                for(size_type k = 0; k < m_[i*N_ + j]; k++) {
+                for(particle_type k = 0; k < m_[i*N_ + j]; k++) {
                     if ( static_cast<value_type>(eng0()) /
                          static_cast<value_type>(eng0.max()) <= p_stay_ ) {
                         continue; // does not move
@@ -194,18 +196,22 @@ private:
 
     void initialize_density()
     {
+		particle_type tmp = 0;
         /// initialize rho(x,y,t=0) = sin(pi*x)*sin(pi*y)
         /// and m(x,y,t=0) = fac_ * rho(x,y,t=0)
         for (size_type i = 1; i < N_-1; ++i) {
             for (size_type j = 1; j < N_-1; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
                 m_[i*N_ + j] = static_cast<size_type>(rho_[i*N_ + j] * fac_);
+				n_parts += m_[i*N_ + j];
             }
         }
+		std::cout << "Actual # of particles = " << tmp << std::endl;
     }
 
     value_type D_;
-    size_type N_, Ntot, M_, n_step_;
+    size_type N_, Ntot, n_step_;
+	M_type M_;
 
     value_type dh_, dt_, lambda_, fac_, p_stay_, rms_error_;
 
@@ -251,7 +257,7 @@ int main(int argc, char* argv[])
         t_max = 0.1;
     }
 
-    std::cout << "Running RW Scalar Simulations" << '\n';
+    std::cout << "Running RW Serial Simulations" << '\n';
     std::cout << "N = " << N << '\t' << "dt = " << dt << '\t'
               << "M = " << M << std::endl;
 
@@ -298,6 +304,8 @@ int main(int argc, char* argv[])
             system.write_reference("Solutions/RW_ref.dat");
         }
     }
+	
+	std::cout << "Actual # of particles = " << n_parts << std::endl;
 
     std::cout << "RMS Error of final run = " << e_rms << '\n';
     std::cout << "At a final time = " << final_time << '\n';
