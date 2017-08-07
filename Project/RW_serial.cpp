@@ -22,8 +22,6 @@ typedef std::size_t size_type;
 typedef int32_t particle_type;
 typedef uint64_t M_type;
 
-particle_type n_parts = 0;
-
 #ifndef M_PI
     constexpr value_type M_PI = 3.14159265358979323846;
 #endif // M_PI
@@ -61,7 +59,7 @@ public:
         eng0.seed(0);
         n_step_ = 0;
 
-        initialize_density();
+        M_real_ = initialize_density();
     }
 
     void advance()
@@ -191,27 +189,34 @@ public:
     {
         return dt_;
     }
+	
+	M_type M_real() const
+    {
+        return M_real_;
+    }
 
 private:
 
-    void initialize_density()
+    M_type initialize_density()
     {
-		particle_type tmp = 0;
+		M_type n_particles = 0;
+		
         /// initialize rho(x,y,t=0) = sin(pi*x)*sin(pi*y)
         /// and m(x,y,t=0) = fac_ * rho(x,y,t=0)
         for (size_type i = 1; i < N_-1; ++i) {
             for (size_type j = 1; j < N_-1; ++j) {
                 rho_[i*N_ + j] = sin(M_PI*i*dh_) * sin(M_PI*j*dh_);
-                m_[i*N_ + j] = static_cast<size_type>(rho_[i*N_ + j] * fac_);
-				n_parts += m_[i*N_ + j];
+                m_[i*N_ + j] = static_cast<size_type>(rho_[i*N_ + j]*fac_*dh_*dh_);
+				n_particles += m_[i*N_ + j];
             }
         }
-		std::cout << "Actual # of particles = " << tmp << std::endl;
+		
+		return n_particles;
     }
 
     value_type D_;
     size_type N_, Ntot, n_step_;
-	M_type M_;
+	M_type M_, M_real_;
 
     value_type dh_, dt_, lambda_, fac_, p_stay_, rms_error_;
 
@@ -263,6 +268,7 @@ int main(int argc, char* argv[])
 
     myInt64 min_cycles = 0;
     value_type e_rms, final_time;
+	M_type M_initial = 0;
 
     for(size_type i = 0; i < n_runs; i++) {
         Diffusion2D system(D, N, M, dt);
@@ -300,12 +306,13 @@ int main(int argc, char* argv[])
 
         if ( i == n_runs-1 ) {
             final_time = system.time();
+			M_initial = system.M_real();
             system.write_density("Solutions/RW_scalar.dat");
             system.write_reference("Solutions/RW_ref.dat");
         }
     }
 	
-	std::cout << "Actual # of particles = " << n_parts << std::endl;
+	std::cout << "Actual # of particles = " << M_initial << std::endl;
 
     std::cout << "RMS Error of final run = " << e_rms << '\n';
     std::cout << "At a final time = " << final_time << '\n';
