@@ -96,7 +96,7 @@ public:
 
         for(size_type i = 1; i < N_-1; ++i) {
             for(size_type j = 1; j < N_-1; ++j) {
-                rho_[i*N_ + j] = static_cast<value_type>(m_[i*N_ + j]) / fac_;
+                rho_[i*N_ + j] = static_cast<value_type>(m_[i*N_ + j]) / (fac_*dh_*dh_);
             }
         }
 
@@ -300,7 +300,7 @@ int main(int argc, char* argv[])
         system.compute_rms_error();
         e_rms = system.rms_error();
 
-        if ( (e_rms < 0.001) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
+        if ( (e_rms < 1) && ( (cycles < min_cycles) || (min_cycles == 0) ) ) {
             min_cycles = cycles;
         }
 

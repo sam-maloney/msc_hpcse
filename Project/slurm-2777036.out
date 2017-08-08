@@ -1,0 +1,80 @@
+ModuleCmd_Switch.c(179):ERROR:152: Module 'PrgEnv-cray' is currently not loaded
+perftools-base/6.4.3(41):ERROR:150: Module 'perftools-base/6.4.3' conflicts with the currently loaded module(s) 'perftools'
+perftools-base/6.4.3(41):ERROR:102: Tcl command execution failed: conflict perftools
+
+Running PERF_RW_SERIAL Simulations
+
+Running RW Serial Simulations
+N = 8	dt = 1e-09	M = 64000
+Actual # of particles = 61848
+RMS Error of final run = 0.000109182
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 57510026
+Total program execution time = 0h : 0m : 0.225265s
+
+Running RW Serial Simulations
+N = 14	dt = 1e-09	M = 196000
+Actual # of particles = 194032
+RMS Error of final run = 0.00017344
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 180314810
+Total program execution time = 0h : 0m : 0.698624s
+
+Running RW Serial Simulations
+N = 26	dt = 1e-09	M = 676000
+Actual # of particles = 673936
+RMS Error of final run = 0.000278504
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 626389754
+Total program execution time = 0h : 0m : 2.42104s
+
+Running RW Serial Simulations
+N = 50	dt = 1e-09	M = 2500000
+Actual # of particles = 2497112
+RMS Error of final run = 0.000436988
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 2323041132
+Total program execution time = 0h : 0m : 8.94169s
+
+Running RW Serial Simulations
+N = 122	dt = 1e-09	M = 14884000
+Actual # of particles = 14875044
+RMS Error of final run = 0.000975981
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 13844061532
+Total program execution time = 0h : 0m : 53.2977s
+
+Running RW Serial Simulations
+N = 242	dt = 1e-09	M = 58564000
+Actual # of particles = 58533476
+RMS Error of final run = 0.00193051
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 54539402828
+Total program execution time = 0h : 3m : 29.9076s
+
+Running RW Serial Simulations
+N = 482	dt = 1e-09	M = 232324000
+Actual # of particles = 232207660
+RMS Error of final run = 0.00378335
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 216986792722
+Total program execution time = 0h : 13m : 54.8384s
+
+Running RW Serial Simulations
+N = 962	dt = 1e-09	M = 925444000
+Actual # of particles = 924982904
+RMS Error of final run = 0.00697966
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 874046825950
+Total program execution time = 0h : 56m : 2.40884s
+
+Running RW Serial Simulations
+N = 1922	dt = 1e-09	M = 3694084000
+Actual # of particles = 3692238860
+RMS Error of final run = 0.0107457
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 3646932527992
+Total program execution time = 3h : 53m : 50.5956s
+
+Running RW Serial Simulations
+N = 3842	dt = 1e-09	M = 14760964000
