@@ -96,7 +96,7 @@ Using a second order centered approximation for the spatial derivative in Eq. \e
 These can be rewritten in the form $\mathbf{A}\rho^*=\rho^{*-\frac{1}{2}}$ where $\mathbf{A}$ is the tridiagonal matrix to be solved at each half timestep.
 
 \mypar{Random Walk}
-Diffusion can also be simulated by tracking the random motion of a set of $M$ identical particles with no inertia. A probability $\lambda=D\delta t/\delta x^2$ is defined, such that at each time step, each particle has a $1-4\lambda$ probability of remaining in the same position. If it does not stay, it is then moved to one of the 4 neighbouring nodes, with an equal probability of moving in any direction. Clearly, one requires $lambda<1/2$ to maintain a positive probability of staying.
+Diffusion can also be simulated by tracking the random motion of a set of $M$ identical particles with no inertia. A probability $\lambda=D\delta t/\delta x^2$ is defined, such that at each time step, each particle has a $1-4\lambda$ probability of remaining in the same position. If it does not stay, it is then moved to one of the four neighbouring nodes, with an equal probability of moving in any direction. Clearly, one requires $lambda<1/2$ to maintain a positive probability of staying.
 
 The initial conidition for the numer of particles at each grid point $m_{i,j}$ is given as:
 \begin{equation}
@@ -122,8 +122,8 @@ An order verification study (OVS) of the ADI code in both spatial and temporal d
 The ADI algorithm complexity should be $O(N^2)$ as it does a constant number of operations for updating value at each point in the grid. It's runtime scaling (see \ref{subsec:ADI_results}, Fig. \ref{fig:runtime_ADI}) is also found to agree with this expected complexity.
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/OVS_ADI_cropped.eps}
-  \caption{Order Verification study of the ADI code.}
+  \includegraphics[width=\linewidth]{./plots/OVS_ADI.eps}
+  \caption{Order verification study of the ADI code in space and time.}
   \label{fig:OVS_ADI}
 \end{figure}
 
@@ -131,27 +131,34 @@ For performance analysis, the cost of the ADI code is defined as the number of f
 
 The results of a roofline analysis are shown in Fig. \ref{fig:roofline_ADI_serial} for the baseline code. Three data series are presented, which use the same performance data but compute the operational intensity with respect to different levels of the cache heirarchy. The imlementation appears compute bound with respect to memory tranfers with RAM, but for large $N$ it becomes clearly memory bound at higher levels of the cache, albeit with still siginificant room to improve towards the memory bandwidth rooflines. Maximum performance of 0.734 FLOPs/cycle, or 18\% of peak scalar performance is observed. On the test machine, with an Intel Haswell central processing unit (CPU), the peak performance is calculated by considering the maximum throughput of 2 fused multiply add (FMA) instructions per cycle, giving 4 total FLOPs per cycle. Data for the cache bandwidths used in this (and subsequent) roofline plots was obtained from \cite{7_cpu} and \cite{manual_intel}.
 
+\begin{figure}\centering
+  \includegraphics[width=\linewidth]{./plots/roofline_ADI_serial.eps}
+  \caption{Roofline analysis of the ADI baseline code.}
+  \label{fig:roofline_ADI_serial}
+\end{figure}
+
 \mypar{RW}
-Lorem Ipsum dolor sit amet.
+One of the most important aspects of the RW implementation is the choice of pseudorandom rumber generator (PRNG) used. Knowing that parallelization would eventually be necessary, the SITMO PRNG \cite{sitmo} was initially selected. It claims to be faster than the C++ Mersenne Twister, passes all BigCrush test in the TestU01 framework, and provide easy access to many non-overlapping streams which would be useful for later parallelization. For the baseline implementation only, the code loops over all nodes and then at each node loops over all particles at that node. For each particle a random number is generated to determine if it stays or in which direction it should move.
+
+An OVS for the baseline RW code is shown in Fig. \ref{fig:OVS_RW_1} with respect to the number of particles in the simulation, again comparing to the analytic solution. This study confirms the baseline to converge as $\sqrt{M}$ as expected from theory. As explained in \ref{subsec:RW_method}, algorithmic changes were made during later optimizations of the RW code, and so additional OVS were carried out on these later versions. Results for these verification studies are shown in Fig. \ref{fig:OVS_RW_2} and confirm that the $\sqrt{M}$ convergence is preserved.
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/OVS_RW_cropped.eps}
-  \caption{Order Verification study of the RW code.}
-  \label{fig:OVS_RW}
+  \includegraphics[width=\linewidth]{./plots/OVS_RW_2.eps}
+  \caption{Order verification studies of the optimized RW codes in the number of simulation particles.}
+  \label{fig:OVS_RW_2}
 \end{figure}
 
 Scaling for the RW method depends on which version is being considered. The baseline implementation should scale as $O(M)$, where $M$ is the number of particles in the simulation. This is because a random number must be generated for each particle in the simulation to determine it's movement for a given timestep, independent of how many grid points there are in the simulation. The later versions that use a binomial random variable (see \ref{subsec:RW_method}) to simulate particle movement scale as $O(N^2)$ because exactly four such random variables must be evaluated for each grid point, independent of the number of particles in the simulation.
+
+Measurements of this runtime scaling (see \ref{subsec:RW_results}, Fig. \ref{fig:runtime_RW}) confirm $O(N^2)$ for all versions of the code. This is as expected for the optimized versions, but also matches for the baseline version, since the number of particles was chosen as $M=1000N^2$, meaning the $O(M)$ complexity is equivalent to $O(N^2)$ complexity for these experiments.
 
 
 % ----------------------------------------------------------------------
 \section{Optimization Method}\label{sec:method}
 
-In this section we explain the main optimizations that were undertaken.
-We discuss the optimizations of the ADI and RW methods in separate subsections.
+In this section the main optimizations that were undertaken are explained. Optimizations of the ADI and RW methods are discussed in separate subsections. For each algorithm, the optimizations are broken down into three revisions: the \textit{Scalar} revision contains only optimizations that do not involve manual vecotorization or parallelization (although it is noted that the compiler was not prevented from vectorizing, so this naming scheme is not meant to imply that the machine code is not vectorized, only that it was not manually attempted at this stage); the \textit{AVX} revision then adds manual vectorization using intrinsics; and the \textit{OpenMP} revision add parallelization using OpenMP to run on a single full XC50 node of Piz Daint.
 
 \subsection{ADI}\label{subsec:ADI_method}
-
-We divide the optimizations in 4 sets called \textit{revisions}.
 
 \mypar{Scalar}
 This revision consists mainly of 
@@ -165,27 +172,31 @@ This revision was targeted at
 
 \subsection{RW}\label{subsec:RW_method}
 
-TheRW optimizations can be similarly broken down into revisions, simlarily to those for the assembly.
-
 \mypar{Scalar}
-This is a direct implentation
+The main optimization of this version lies in no longer looping over every particle and indivdually computing a random number to determine its potential movement, but rather looping only over each node and generating four binomially distributed random numbers to determine the ensemble number of particles that move in each direction. This makes the runtime scaling independent of the number of particles in the simulation, allowing much higher accuracy simulations  without prohibitively increasing the runtime. It is noted that because the sum of the four binomially distributed numbers can be greater than the actual number of particles on the node, particularly for small $M$, a check was added to the code to handle negative nodal values during simulation, but they can still show up as negative values in the final density solution.
+
+A further optimization involved moving the computation out of the simulation loop and into it's own function, such that the conversion was not calculated on each time step, but could be manually called after completion of the simulation to compute the final approximate solution.
 
 \mypar{AVX}
-Vectorization of the code was done by leveraging Intel fused-multiply-add (FMA) and advanced vector extension (AVX) intrinsics.
+Vectorization of the code using manual Single Instruction Multiple Data (SIMD) programming was done by leveraging Intel fused-multiply-add (FMA) and advanced vector extension (AVX) intrinsics. However, it was quickly discovered that changing the code to use AVX intrinsics had only a minimal speedup because the PRNG itself was where most of the runtime was spent, and so vectorized PRNG options were investigated. Intel's Math Kernal Library (MKL) Vector Statistics (VS) package implements a~Streaming\linebreak SIMD Extension (SSE) version of its fast mersenne twister PRNG \cite{SFMT}, and so this was integrated with the AVX intrinsics to create a fully vectorized version of the code.
+
+Because the RW algorithm updates the four neighbouring nodes for any given one being looped over, it was found to be faster if only six nodes were looped over at a time, instead of the maximum eight which would correspond to a full AVX vector of 32-bit integers. This allowed the values being added to the neighbouring nodes to be cleverly aligned within the AVX vectors and added using basic ADD intrinsics, one on top of the other, and eliminated a~small dependency chain of loads and stores that occurred when the loop was originally unrolled by a full factor of eight.
 
 \mypar{OpenMP}
-stuff...
+Again because of the RW algorithm updating the nodes neighbouring the ones being looped over, the main challenge for OpenMP parallelization was preventing race conditions at the boundaries of each thread's working set. To this end, an array of {\tt omp\_mutex} objects (from the C++ class implementation provided in HPCSE I) was introduced, with each lock in the array matching to one of the working set boundaries. Working set indices for each thread were manually computed and the inner for loop was separated into three parts, one each for the first two and final two rows in each working set, which are the ones that have overlap with neighbouring threads, and one for the interior cells that do not have any possible race condition. Each thread then must acquire a lock before entering on of its boundary loops, with the lock for the first rows loop of one thread corresponding to the lock for the final rows of the previous thread to prevent race conditions.
+
+For the PRNG, each thread has its own  PRNG stream which is {\tt threadprivate}. The streams are ensured to be non-overlapping by using the skip ahead functionality provided by the MKL VS library.
 
 
 % ----------------------------------------------------------------------
 \section{Optimization Results}\label{sec:results}
 
-In this section the results of numerical benchmarks of the code at various stages are presented. Runtime, performance, and roofline analyses were performed where applicable.
+In this section the results of numerical benchmarks of the code at various stages are presented. Runtime and scaling experiments were performed for both algorithms, as well as performance and roofline analyses for ADI.
 
 \mypar{Experimental setup}
 All data was collected using a single XC50 node of Piz Daint, which has a 12 core Intel Xeon E5-2690 v3 running at 2.6 GHz \cite{daint}. Each physical processor core has a 64 KB L1 cache split equally into two 32 KB data and instruction caches, and a 256 KB unified L2 cache \cite{cpu_world}. The 30 MB L3 cache is shared between all cores \cite{ark_intel}, and there is 24.9 GB/s bandwidth to main memory \cite{7_cpu}. The Intel C++ Compiler v17.0.1 was used with "-O3 -std=c++11 -DNDEBUG -march=core-avx2 -fno-alias -qopenmp -mkl" flags. The Intel time stamp counter (TSC) was used for runtime measurements and CrayPat was used for cache miss measurements.
 
-The inputs are the number of grid points in domain discretization, the timestep between iterations, and the number of timesteps computed. We used grids of various sizes, up to $N\times N=7680\times7680$. The diffusion constant $D=1$ is used for all simulations, and for RW simulations $M=1000N^2$ particles were used. For ADI, $1000$ iterations were performed, and for RW $50$ iterations were performed to achieve a reasonable runtime for measurements. Each simulation was repeated $10$ times, with the minimum cycle count used for the runtime and the average cache misses used for the memory transfer (the average is used only because it would have prohibitively time-consuming to measure minimum values with CrayPat).
+The inputs are the number of grid points in domain discretization, the timestep between iterations, and the number of timesteps computed. We used grids of various sizes, up to $N\times N=7680\times7680$. The diffusion constant $D=1$ is used for all simulations, and for RW simulations $M=1000N^2$ particles was used. For ADI, $1000$ timesteps were computed, and for RW $50$ timesteps were computed to achieve a reasonable runtime for measurements. Each simulation was repeated $10$ times, with the minimum cycle count used for the runtime and the average cache misses used for the memory transfer (the average is used only because it would have prohibitively time-consuming to measure minimum values with CrayPat).
 
 All experiments were performed with warm cache. This is largely to simulate real world usage scenarios, where the simulation would most likely be performed immediately after initialization while the data is still potentially in cache, exactly as in these experiments. It is noted, however, that the initial cache state should have little effect on the results in either case, as the effects will be amortized over the number of iterations performed, and should become negligible for the relatively large number of iterations used.
 
@@ -193,40 +204,40 @@ All experiments were performed with warm cache. This is largely to simulate real
 Roofline, runtime, and scaling experiments were conducted on the ADI code.
 
 \mypar{Results}
-The runtime plots of various revisions of the ADI code (see \ref{subsec:ADI_method}) are shown in Fig. \ref{fig:runtime_assemby}. Each consecutive revision of the code resulted in a~speedup.
+The runtime plots of various revisions of the ADI code are shown in Fig. \ref{fig:runtime_ADI}. Each consecutive revision of the code resulted in a~speedup.
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/roofline_ADI_all_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/roofline_ADI_all.eps}
   \caption{Roofline analysis of the ADI code.}
   \label{fig:roofline_ADI_all}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/roofline_ADI_AVX_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/roofline_ADI_AVX.eps}
   \caption{Roofline analysis of the ADI AVX code.}
   \label{fig:roofline_ADI_AVX}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/roofline_ADI_scalar_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/roofline_ADI_scalar.eps}
   \caption{Roofline analysis of the ADI scalar code.}
   \label{fig:roofline_ADI_scalar}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/runtime_ADI_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/runtime_ADI.eps}
   \caption{Runtime analysis of the ADI code.}
   \label{fig:runtime_ADI}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/scaling_strong_ADI_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/scaling_strong_ADI.eps}
   \caption{Strong Scaling analysis of the ADI OpenMP code.}
   \label{fig:scaling_strong_ADI}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/scaling_weak_ADI_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/scaling_weak_ADI.eps}
   \caption{Weak Scaling analysis of the ADI OpenMP code.}
   \label{fig:scaling_weak_ADI}
 \end{figure}
@@ -235,22 +246,22 @@ The runtime plots of various revisions of the ADI code (see \ref{subsec:ADI_meth
 Benchmarking experiments were conducted on the RW code
 
 \mypar{Results}
-Results of the roofline, performance, and runtime analyses of the RW code will now be presented.
+Only runtime and scaling analyses of the RW code were conducted and are presented here. Performance and roofline analyses were not carried out because of the ''black box'' nature of the PRNGs in the code, which render it impossible to measure or even usefully approximate the number and type of operations which occur during the simulation.
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/runtime_RW_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/runtime_RW.eps}
   \caption{Runtime analysis of the RW code.}
   \label{fig:runtime_RW}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/scaling_strong_RW_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/scaling_strong_RW.eps}
   \caption{Strong Scaling analysis of the RW OpenMP code.}
   \label{fig:scaling_strong_RW}
 \end{figure}
 
 \begin{figure}\centering
-  \includegraphics[width=\linewidth]{./plots/scaling_weak_RW_cropped.eps}
+  \includegraphics[width=\linewidth]{./plots/scaling_weak_RW.eps}
   \caption{Weak Scaling analysis of the RW OpenMP code.}
   \label{fig:scaling_weak_RW}
 \end{figure}
@@ -278,6 +289,8 @@ Conclude things
 \bibitem{cpu_world}{CPU-World. (Accessed 2017, Aug). \emph{Intel Xeon E5-2690 v3 specifications} [Online]. Available: \url{http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2690%20v3.html}}
 
 \bibitem{ark_intel}{Intel Corporation. (Accessed 2017, Aug). \emph{Intel Xeon Processor E5-2690 v3} [Online]. Available: \url{http://ark.intel.com/products/81713/Intel-Xeon-Processor-E5-2690-v3-30M-Cache-2_60-GHzl}}
+
+\bibitem{SFMT}{Intel Corporation. (Accessed 2017, Aug). \emph{SFMT19937} [Online]. Available: \url{https://software.intel.com/en-us/node/590406}}
 
 \bibitem{transpose}{user2927848. (2016, Mar 23). \emph{m256d TRANSPOSE4 Equivalent} [Online]. Available: \url{https://stackoverflow.com/questions/36167517/m256d-transpose4-equivalent}}
 

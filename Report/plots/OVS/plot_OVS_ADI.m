@@ -23,7 +23,7 @@ set(gca,'XTick',[0.000001 0.00001 0.0001 0.001]);
 ylim([0 4]);
 line([min(dt) max(dt)],[2 2],'Color','black','LineStyle',':');
 
-data = load('OVS_ADI_dh.dat','-ascii');
+data = load('OVS_ADI_dh_2.dat','-ascii');
 
 dh = 1./(data(:,1) - 1);
 rms = data(:,2);
