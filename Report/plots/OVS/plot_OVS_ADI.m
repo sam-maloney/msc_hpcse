@@ -10,7 +10,9 @@ h1 = loglog(dt,rms,'b.-');
 xlabel('dt');
 ylabel('RMS Error');
 xlim([0.000001 0.001]);
+ylim([1e-6 1])
 set(gca,'XTick',[0.000001 0.00001 0.0001 0.001]);
+set(gca,'YTick',[0.000001 0.0001 0.01 1]);
 title('Time Step');
 
 subplot(2,2,3);
