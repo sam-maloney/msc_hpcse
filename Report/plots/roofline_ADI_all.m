@@ -133,9 +133,12 @@ h3 = plot(log2(fac*I_RAM_serial),log2(perf_serial),'-r.');
 text(log2(8),log2(4.7),'Scalar Peak');
 text(log2(10),log2(18.5),'AVX Peak');
 
-text(log2(1.8),log2(1.2),'AVX');
-text(log2(1.45),log2(0.63),'Scalar');
-text(log2(1.1),log2(0.4),'Baseline');
+text(log2(7500),log2(2.4),'AVX');
+text(log2(6000),log2(0.9),'Scalar');
+text(log2(4700),log2(0.56),'Baseline');
+
+text(log2(8),log2(1.3),'N = 10');
+text(log2(0.13),log2(0.43),'N = 7682');
 
 hold off;
 

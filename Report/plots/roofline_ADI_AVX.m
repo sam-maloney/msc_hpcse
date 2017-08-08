@@ -133,6 +133,9 @@ h3 = plot(log2(fac*I_L2_AVX),log2(perf_AVX),'-g.');
 % text(log2(8),log2(4.7),'Scalar Peak');
 text(log2(10),log2(18.5),'AVX Peak');
 
+text(log2(9),log2(1.6),'N = 10');
+text(log2(0.045),log2(0.65),'N = 7682');
+
 hold off;
 
 legh = legend([h3 h2 h1],'L2 cache','L3 cache','RAM','Location','NorthEast');

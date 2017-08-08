@@ -133,6 +133,9 @@ h3 = plot(log2(fac*I_L2_serial),log2(perf_serial),'-g.');
 text(log2(4),log2(4.7),'Scalar Peak');
 text(log2(5),log2(18.5),'AVX Peak');
 
+text(log2(19),log2(0.9),'N = 10');
+text(log2(0.047),log2(0.29),'N = 7682');
+
 hold off;
 
 legh = legend([h3 h2 h1],'L2 cache','L3 cache','RAM','Location','NorthEast');
@@ -150,7 +153,7 @@ set(ylabh,'Position',get(ylabh,'Position') + [horzOffset vertOffset 0]);
 set(gca,'Position',get(gca,'Position') - [0 0 0 0.1]);
 h = title('ADI Roofline, Baseline','FontSize', 15);
 vertOffset = (top - bottom)*0.08;
-horzOffset = (right - left)*-0.296;
+horzOffset = (right - left)*-0.27;
 set(h,'Position',get(h,'Position') + [horzOffset vertOffset 0]);
 
 set(gcf,'color','w');
