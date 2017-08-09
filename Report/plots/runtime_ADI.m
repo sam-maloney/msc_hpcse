@@ -16,12 +16,12 @@ cycles_serial = [2660340 15212056 67465372 283717286 1023417704 ...
                  4149885946 16714511968 78836296474 354014868042 ...
                  1545784109690 6881886399924];
 
-loglog(N,cycles_AVX,'-g.');
+h1 = loglog(N,cycles_AVX,'-g.');
              
 hold on;
 
-loglog(N,cycles_scalar,'-b.');
-loglog(N,cycles_serial,'-r.');
+h2 = loglog(N,cycles_scalar,'-b.');
+h3 = loglog(N,cycles_serial,'-r.');
 
 xlim([left right]);
 ylim([bottom top]);
@@ -31,8 +31,7 @@ ylim([bottom top]);
 
 hold off;
 
-% legh = legend([h3 h2 h1],'AVX + ILP','AVX',...
-%                   'Scalar','Location','SouthEast');
+legh = legend([h3 h2 h1],'Baseline','Scalar','AVX','Location','East');
 % vertOffset = (top - bottom)*0.02;
 % set(legh,'Position',get(legh,'Position') + [0 vertOffset 0 0]);
 

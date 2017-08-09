@@ -35,6 +35,8 @@ h2 = loglog(dh,rms,'b.-');
 xlabel('dh');
 ylabel('RMS Error');
 xlim([min(dh) max(dh)]);
+ylim([1e-11 1e-5]);
+set(gca,'YTick',[1e-11 1e-9 1e-7 1e-5]);
 title('Grid Spacing');
 set(gca,'XTick',[0.01 0.1]);
 

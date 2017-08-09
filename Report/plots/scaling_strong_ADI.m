@@ -18,11 +18,11 @@ ylim([1 24]);
 set(gca,'XTick',[1 4 8 12 16 20 24])
 set(gca,'YTick',[1 4 8 12 16 20 24])
 
-line([12 12],[1 24],'Color',[0.5 0.5 0.5],'LineStyle','--');
+line([12.5 12.5],[1 24],'Color',[0.5 0.5 0.5],'LineStyle','--');
 line([1 24],[24 24],'Color',[0.0 0.0 0.0]);
 line([24 24],[24 1],'Color',[0.0 0.0 0.0]);
 
-h = text(4.2,22,'No Hyper-threading          Hyper-threading');
+h = text(5.5,22,'No Hyper-threading          Hyper-threading');
 
 hold off;
 
