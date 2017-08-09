@@ -78,3 +78,9 @@ Total program execution time = 3h : 53m : 50.5956s
 
 Running RW Serial Simulations
 N = 3842	dt = 1e-09	M = 14760964000
+Actual # of particles = 14753588680
+RMS Error of final run = 0.0124199
+At a final time = 5e-08
+Minimum Cycles over 10 runs = 17157730882416
+Total program execution time = 18h : 20m : 6.0541s
+
