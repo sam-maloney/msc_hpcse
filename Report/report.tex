@@ -140,11 +140,17 @@ The results of a roofline analysis are shown in Fig. \ref{fig:roofline_ADI_seria
 \mypar{RW}
 One of the most important aspects of the RW implementation is the choice of pseudorandom rumber generator (PRNG) used. Knowing that parallelization would eventually be necessary, the SITMO PRNG \cite{sitmo} was initially selected. It claims to be faster than the C++ Mersenne Twister, passes all BigCrush test in the TestU01 framework, and provide easy access to many non-overlapping streams which would be useful for later parallelization. For the baseline implementation only, the code loops over all nodes and then at each node loops over all particles at that node. For each particle a random number is generated to determine if it stays or in which direction it should move.
 
-An OVS for the baseline RW code is shown in Fig. \ref{fig:OVS_RW_1} with respect to the number of particles in the simulation, again comparing to the analytic solution. This study confirms the baseline to converge as $\sqrt{M}$ as expected from theory. As explained in \ref{subsec:RW_method}, algorithmic changes were made during later optimizations of the RW code, and so additional OVS were carried out on these later versions. Results for these verification studies are shown in Fig. \ref{fig:OVS_RW_2} and confirm that the $\sqrt{M}$ convergence is preserved.
+An OVS for the baseline RW code is shown in Fig. \ref{fig:OVS_RW_1} with respect to the number of particles in the simulation, again comparing to the analytic solution. This study confirms the baseline to converge as $\sqrt{M}$ as expected from theory. As explained in section \ref{subsec:RW_method}, algorithmic changes were made during later optimizations of the RW code, and so additional OVSs were carried out on these later versions to ensure they remained correct. Results for these verifications are shown in Fig. \ref{fig:OVS_RW_2} and confirm that the $\sqrt{M}$ convergence is preserved.
+
+\begin{figure}\centering
+  \includegraphics[width=\linewidth]{./plots/OVS_RW_1.eps}
+  \caption{Order verification study of the baseline RW code for the number of simulation particles.}
+  \label{fig:OVS_RW_1}
+\end{figure}
 
 \begin{figure}\centering
   \includegraphics[width=\linewidth]{./plots/OVS_RW_2.eps}
-  \caption{Order verification studies of the optimized RW codes in the number of simulation particles.}
+  \caption{Order verification studies of the optimized RW codes for the number of simulation particles.}
   \label{fig:OVS_RW_2}
 \end{figure}
 
@@ -154,20 +160,32 @@ Measurements of this runtime scaling (see \ref{subsec:RW_results}, Fig. \ref{fig
 
 
 % ----------------------------------------------------------------------
-\section{Optimization Method}\label{sec:method}
+\section{Optimization Methods}\label{sec:method}
 
 In this section the main optimizations that were undertaken are explained. Optimizations of the ADI and RW methods are discussed in separate subsections. For each algorithm, the optimizations are broken down into three revisions: the \textit{Scalar} revision contains only optimizations that do not involve manual vecotorization or parallelization (although it is noted that the compiler was not prevented from vectorizing, so this naming scheme is not meant to imply that the machine code is not vectorized, only that it was not manually attempted at this stage); the \textit{AVX} revision then adds manual vectorization using intrinsics; and the \textit{OpenMP} revision add parallelization using OpenMP to run on a single full XC50 node of Piz Daint.
 
 \subsection{ADI}\label{subsec:ADI_method}
 
 \mypar{Scalar}
-This revision consists mainly of 
+Several different types of optimizations were included in this revision. Firstly, the number of operations required was greatly reduced by precomputing several factors needed for the Thomas algorithm that were the same for each row/column and timestep. This required an additional two vectors of length $N$ to store the precomputed values, but greatly reduced the FLOP count overall, and in particular removed all division operations from the simulation loop.
+
+Secondly, unrolling of the outer loops was performed to take advantage of the spatial locality in the algorithm. It achieves a speedup because updating the values for each row/column requires the values from the immediately adjacent rows/columns, so by unrolling the loop we expose independent operations in adjacent rows which use the same data, thus decreasing the data movement required and increasing Instruction Level Parallelism (ILP). It was decided to unroll by a multiple of four, in preparation for vectorization with AVX, and unrolling factors of four, eight, and twelve were tested, with a factor of eight determined to be optimal on the test system.
+
+Lastly, Single Static Assignment (SSA) was introduced throughout the code to promote optimal register allocation by the compiler for all reused data values and computations.
 
 \mypar{AVX}
-In this revision we used
+Manual vectorization of the code with AVX intrinsics was carried out in this revision. In the final version of this code, only the loop over the columns was manually vectorized, as nothing that was attempted to the row loop was able to reduce the runtime. This is mostly due to the row-major storage order of C++ arrays, which mean that data for adjacent columns is nicely aligned for loading to and from AVX vectors, but the data from adjacent rows requires some sort of gathering and scattering operations to fill the vectors with the correct data. Several methods of achieving this were tested, but were found ot be slower than simply letting the compiler handle the scalar code.
+
+The first method attempted involved storing the half-timestep result in transposed form, such that both loops were loading their data column-wise, thus requiring only the single scatter operation for each vector of values updated, abeit for both loops, rather than the one scatter and three gather operations that would have been required to read and store in the column-wise loop. The second method attempted involved unrolling the inner loop by a factor of four, such that the full vectors of data from each load operation could be used, rather than just the single value used from each load operation used in a gather. This reduced the number of load instructions required by a factor of four, but does replace them with a number of shuffle and permute operations to arrange all of the loaded data properly into vectors for the computations (AVX transposition code based on \cite{transpose}).
+
+One last thing that was attempted at this stage was unrolling of the vectorized inner loop in an attempt to improve piplining of operations. An unrolling factor of three was selected as it was the largest factor for which the number of required AVX vectors in the code did not exceed the number of available AVX registers on the CPU. In this way, load instructions for data for future iterations were interleaved with computations for current iterations, but unfortunately no improvement in runtime was attained, and so this unrolling of the inner loop was not included in the final code for this revision.
+
+Implementations for the required scatter, gather, and rearranging operations were hand coded and optimized using throughput, latency, and execution port data from Agner Fog's tables \cite{Agner}, which were also used for analysis of instruction level dependencies in the attempts to improve piplining.
 
 \mypar{OpenMP}
-This revision was targeted at 
+Initial parallelization of the ADI code with OpenMP was quite straightforward. The code was restructured slightly, such that instead of a loop in the main function calling an {\tt advance} function for each iteration, the loop was placed directly around the simulation code inside of a {\tt run\_simulation} function, as mentioned in section \ref{sec:baseline}. This allowed for a single {\tt omp parallel} region to be created at the beginning of the simulation that would only be exited upon completion, preventing joining and spawning of threads between iterations and removing OpenMP overhead from within the loop. After that, simple parallelization was achieved with {\tt omp for} on both loops, using a {\tt no wait} clause on the second loop because synchronization would already be achieved by the {\tt omp single} used for updating the step counter only once at the end of each iteration.
+
+However, one major issue which remained with this initial implementation was false sharing. Although the individual threads never need to write to exactly the same entries of the array, they are often writing to nearby entries at the boundaries of their working set. This means that the boundaries of each working set should be cache line aligned in order to prevent false sharing between threads. To attain this, a~check was added to the code requiring that the number of grid points $N$ be a multiple of eight, since there are eight doubles in a 64 B cache line. An {\tt aligned\_alloc} was then used to allocate 64 B aligned memory for storage, and as the outer loops were already unrolled by a factor of eight this ensured that each thread's working set did not share cache lines with its neighbours.
 
 
 \subsection{RW}\label{subsec:RW_method}
@@ -183,9 +201,9 @@ Vectorization of the code using manual Single Instruction Multiple Data (SIMD) p
 Because the RW algorithm updates the four neighbouring nodes for any given one being looped over, it was found to be faster if only six nodes were looped over at a time, instead of the maximum eight which would correspond to a full AVX vector of 32-bit integers. This allowed the values being added to the neighbouring nodes to be cleverly aligned within the AVX vectors and added using basic ADD intrinsics, one on top of the other, and eliminated a~small dependency chain of loads and stores that occurred when the loop was originally unrolled by a full factor of eight.
 
 \mypar{OpenMP}
-Again because of the RW algorithm updating the nodes neighbouring the ones being looped over, the main challenge for OpenMP parallelization was preventing race conditions at the boundaries of each thread's working set. To this end, an array of {\tt omp\_mutex} objects (from the C++ class implementation provided in HPCSE I) was introduced, with each lock in the array matching to one of the working set boundaries. Working set indices for each thread were manually computed and the inner for loop was separated into three parts, one each for the first two and final two rows in each working set, which are the ones that have overlap with neighbouring threads, and one for the interior cells that do not have any possible race condition. Each thread then must acquire a lock before entering on of its boundary loops, with the lock for the first rows loop of one thread corresponding to the lock for the final rows of the previous thread to prevent race conditions.
+Again because of the RW algorithm updating the nodes neighbouring the ones being looped over, the main challenge for OpenMP parallelization was preventing race conditions at the boundaries of each thread's working set. To this end, an array of {\tt omp\_mutex} objects (from the C++ class implementation provided in HPCSE I) was introduced, with each lock in the array matching to one of the working set boundaries. Working set indices for each thread were manually computed and the inner for loop was separated into three parts, one each for the first two and final two rows in each working set, which are the ones that have overlap with neighbouring threads, and one for the interior cells that do not have any possible race condition. Each thread then must acquire a lock before entering one of its boundary loops, with the lock for the first rows loop of one thread corresponding to the lock for the final rows of the previous thread to prevent race conditions.
 
-For the PRNG, each thread has its own  PRNG stream which is {\tt threadprivate}. The streams are ensured to be non-overlapping by using the skip ahead functionality provided by the MKL VS library.
+Each thread also requires independently generated random numbers, and so each has its own PRNG stream which is made to be {\tt threadprivate}. The streams are ensured to be non-overlapping by using the skip ahead functionality provided by the MKL VS library, with the number of entries in the sequence to be skipped being calulated from the number of grid points and required timesteps.
 
 
 % ----------------------------------------------------------------------
@@ -286,15 +304,17 @@ Conclude things
 
 \bibitem{manual_intel}{Intel Corporation. (2016, Jun). \emph{Intel 64 and IA-32 Architectures Optimization Reference Manual} [Online]. Available: \url{https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-optimization-manual.html}}
 
-\bibitem{cpu_world}{CPU-World. (Accessed 2017, Aug). \emph{Intel Xeon E5-2690 v3 specifications} [Online]. Available: \url{http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2690%20v3.html}}
-
-\bibitem{ark_intel}{Intel Corporation. (Accessed 2017, Aug). \emph{Intel Xeon Processor E5-2690 v3} [Online]. Available: \url{http://ark.intel.com/products/81713/Intel-Xeon-Processor-E5-2690-v3-30M-Cache-2_60-GHzl}}
-
-\bibitem{SFMT}{Intel Corporation. (Accessed 2017, Aug). \emph{SFMT19937} [Online]. Available: \url{https://software.intel.com/en-us/node/590406}}
+\bibitem{sitmo}{T. van den Berg. (Accessed 2017, Aug). \emph{High Quality C++ Parallel Random Number Generator} [Online]. Available: \url{https://www.sitmo.com/?p=1206}}
 
 \bibitem{transpose}{user2927848. (2016, Mar 23). \emph{m256d TRANSPOSE4 Equivalent} [Online]. Available: \url{https://stackoverflow.com/questions/36167517/m256d-transpose4-equivalent}}
 
-\bibitem{sitmo}{T. van den Berg. (Accessed 2017, Aug). \emph{High Quality C++ Parallel Random Number Generator} [Online]. Available: \url{https://www.sitmo.com/?p=1206}}
+\bibitem{Agner}{A Fog. (2017, May 2). \emph{Instruction tables} [Online]. Available: \url{http://www.agner.org/optimize/instruction_tables.pdf}}
+
+\bibitem{SFMT}{Intel Corporation. (Accessed 2017, Aug). \emph{SFMT19937} [Online]. Available: \url{https://software.intel.com/en-us/node/590406}}
+
+\bibitem{cpu_world}{CPU-World. (Accessed 2017, Aug). \emph{Intel Xeon E5-2690 v3 specifications} [Online]. Available: \url{http://www.cpu-world.com/CPUs/Xeon/Intel-Xeon%20E5-2690%20v3.html}}
+
+\bibitem{ark_intel}{Intel Corporation. (Accessed 2017, Aug). \emph{Intel Xeon Processor E5-2690 v3} [Online]. Available: \url{http://ark.intel.com/products/81713/Intel-Xeon-Processor-E5-2690-v3-30M-Cache-2_60-GHzl}}
 
 \end{thebibliography}
 
