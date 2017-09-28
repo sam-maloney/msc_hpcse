@@ -198,7 +198,7 @@ private:
 
         c_[1] = -fac_ / (1.0 + 2.0*fac_);
         for(size_type i = 2; i < N_-2; i++) {
-            c_[i] = -fac_ / (1.0 + 2.0*fac_ - fac_*c_[i-1]);
+            c_[i] = -fac_ / (1.0 + 2.0*fac_ + fac_*c_[i-1]);
         }
     }
 

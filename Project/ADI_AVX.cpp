@@ -404,7 +404,7 @@ private:
     {
         c_[1] = -fac_ / f2_;
         for(size_type i = 2; i < N_-1; i++) {
-            c_[i] = -fac_ / (f2_ - fac_*c_[i-1]);
+            c_[i] = -fac_ / (f2_ + fac_*c_[i-1]);
             c_rcp_[i] = fac_/(f2_ + fac_*c_[i-1]);
         }
     }
