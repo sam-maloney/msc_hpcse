@@ -1,20 +1,20 @@
 #include <x86intrin.h>
 
-#define _MM256_SCATTER_PD(double* addr0, double* addr1 \
-                          double* addr2, double* addr3 \
-                          __m256d vec) {               \
-                                                       \
-_m128d tmp0 = _mm256_extractf128_pd((vec), 0);         \
-_m128d tmp1 = _mm256_extractf128_pd((vec), 1);         \
-                                                       \
-_mm_store_sd ((addr0), tmp0);                          \
-_mm_storeh_pd((addr1), tmp0);                          \
-_mm_store_sd ((addr2), tmp1);                          \
-_mm_storeh_pd((addr3), tmp1);                          \
+#define _MM256_SCATTER_PD(double* addr0, double* addr1, \
+                          double* addr2, double* addr3, \
+                          __m256d vec) {                \
+                                                        \
+_m128d tmp0 = _mm256_extractf128_pd((vec), 0);          \
+_m128d tmp1 = _mm256_extractf128_pd((vec), 1);          \
+                                                        \
+_mm_store_sd ((addr0), tmp0);                           \
+_mm_storeh_pd((addr1), tmp0);                           \
+_mm_store_sd ((addr2), tmp1);                           \
+_mm_storeh_pd((addr3), tmp1);                           \
 }
 
-void _mm256_scatter_pd(double* addr0, double* addr1
-                       double* addr2, double* addr3
+void _mm256_scatter_pd(double* addr0, double* addr1,
+                       double* addr2, double* addr3,
                        __m256d vec)
 {
     _m128d tmp0 = _mm256_extractf128_pd(vec, 0);
@@ -26,7 +26,7 @@ void _mm256_scatter_pd(double* addr0, double* addr1
     _mm_storeh_pd(addr3, tmp1);
 }
 
-__m256d _mm256_gather_pd(double* addr0, double* addr1
+__m256d _mm256_gather_pd(double* addr0, double* addr1,
                          double* addr2, double* addr3)
 {
     __m256d tmp0 = _mm256_loadu_pd(addr0);
