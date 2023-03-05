@@ -60,3 +60,16 @@ Project/Solutions/*.dat
 # SPRNG
 sprng5/*
 Project/sprng5/*
+
+# LaTeX intermediates
+*.synctex.gz
+*.synctex(busy)
+*.log
+*.aux
+*.out
+*.thm
+*.toc
+thesis.pdf
+
+# Windows temp files
+~*

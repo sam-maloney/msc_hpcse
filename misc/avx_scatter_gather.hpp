@@ -39,3 +39,4 @@ __m256d _mm256_gather_pd(double* addr0, double* addr1,
 
     return _mm256_blend_pd(tmp4, tmp5, 0xC);
 }
+
